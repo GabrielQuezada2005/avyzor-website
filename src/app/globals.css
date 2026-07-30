@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --gold: #c9a227;
+    --gold-light: #ffe080;
+    --gold-dark: #a8861f;
+    --dark: #0a0a0a;
+    --dark-light: #111111;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-dark-900 text-white font-sans;
+  }
+
+  ::selection {
+    @apply bg-gold-500/30 text-gold-100;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gold-600/50 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-500/70;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gold-gradient;
+  }
+
+  .border-gradient-gold {
+    border-image: linear-gradient(135deg, #c9a227, #ffe080, #c9a227) 1;
+  }
+
+  .glass {
+    @apply bg-dark-800/60 backdrop-blur-xl border border-white/5;
+  }
+
+  .glass-gold {
+    @apply bg-dark-800/40 backdrop-blur-xl border border-gold-500/20;
+  }
+
+  .section-padding {
+    @apply py-24 md:py-32 px-4 md:px-8;
+  }
+
+  .container-premium {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .premium-card {
+    @apply glass rounded-2xl p-8 transition-all duration-500 hover:border-gold-500/30 hover:shadow-gold;
+  }
+
+  .premium-input {
+    @apply w-full bg-dark-700/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/30 transition-all duration-300;
+  }
+
+  .premium-label {
+    @apply block text-sm font-medium text-white/70 mb-2;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: animateIn 0.6s ease-out forwards;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
