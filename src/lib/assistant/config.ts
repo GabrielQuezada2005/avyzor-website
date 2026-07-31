@@ -16,12 +16,12 @@ export const ASSISTANT_CONFIG: AssistantConfig = {
     {
       id: "pricing",
       label: "Preise",
-      message: "Was kosten eure Pakete?",
+      message: "Was kosten Ihre Pakete?",
     },
     {
       id: "contact",
       label: "Kontakt",
-      message: "Wie kann ich euch kontaktieren?",
+      message: "Wie kann ich Sie kontaktieren?",
     },
     {
       id: "timeline",
