@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,17 +41,20 @@ export function AssistantInput({
         disabled={disabled}
         placeholder={placeholder}
         rows={1}
+        aria-label="Chat-Nachricht"
         className={cn(
-          "w-full resize-none bg-dark-700/50 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-white/30",
+          "w-full resize-none bg-dark-700/60 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-white/30",
           "focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/30 transition-all duration-300",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "max-h-24 overflow-y-auto"
         )}
       />
-      <button
+      <motion.button
         type="submit"
         disabled={disabled || !value.trim()}
         aria-label="Nachricht senden"
+        whileHover={value.trim() && !disabled ? { scale: 1.05 } : undefined}
+        whileTap={value.trim() && !disabled ? { scale: 0.92 } : undefined}
         className={cn(
           "absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
           value.trim() && !disabled
@@ -59,7 +63,7 @@ export function AssistantInput({
         )}
       >
         <Send size={14} />
-      </button>
+      </motion.button>
     </form>
   );
 }

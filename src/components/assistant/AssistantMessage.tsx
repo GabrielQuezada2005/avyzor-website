@@ -1,11 +1,13 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/assistant";
 import { Bot, User } from "lucide-react";
 
 interface AssistantMessageProps {
   message: ChatMessage;
+  index: number;
 }
 
 function formatTime(date: Date): string {
@@ -15,16 +17,21 @@ function formatTime(date: Date): string {
   });
 }
 
-export function AssistantMessage({ message }: AssistantMessageProps) {
+export function AssistantMessage({ message, index }: AssistantMessageProps) {
   const isUser = message.role === "user";
   const isError = message.status === "error";
 
   return (
-    <div
-      className={cn(
-        "flex gap-3 animate-in",
-        isUser ? "flex-row-reverse" : "flex-row"
-      )}
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 380,
+        damping: 28,
+        delay: index * 0.04,
+      }}
+      className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}
     >
       <div
         className={cn(
@@ -63,13 +70,18 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
           {formatTime(message.timestamp)}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export function AssistantTypingIndicator() {
   return (
-    <div className="flex gap-3 animate-in">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 4 }}
+      className="flex gap-3"
+    >
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-dark-600 border border-white/10 flex items-center justify-center">
         <Bot size={14} className="text-gold-400" />
       </div>
@@ -78,6 +90,6 @@ export function AssistantTypingIndicator() {
         <span className="w-2 h-2 bg-gold-400/60 rounded-full animate-bounce [animation-delay:150ms]" />
         <span className="w-2 h-2 bg-gold-400/60 rounded-full animate-bounce [animation-delay:300ms]" />
       </div>
-    </div>
+    </motion.div>
   );
 }

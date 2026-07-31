@@ -1,60 +1,52 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AssistantButtonProps {
   isOpen: boolean;
   onClick: () => void;
-  unreadCount?: number;
 }
 
-export function AssistantButton({
-  isOpen,
-  onClick,
-  unreadCount = 0,
-}: AssistantButtonProps) {
+export function AssistantButton({ isOpen, onClick }: AssistantButtonProps) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay: 1.5, type: "spring", stiffness: 200 }}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.95 }}
+      transition={{ delay: 1.2, type: "spring", stiffness: 260, damping: 20 }}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
       aria-label={isOpen ? "Chat schließen" : "AVYZOR Assistant öffnen"}
       aria-expanded={isOpen}
       className={cn(
-        "fixed bottom-24 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-shadow group",
+        "fixed bottom-24 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full transition-shadow duration-300 group",
         isOpen
-          ? "bg-dark-700 border border-gold-500/40 shadow-gold"
-          : "bg-gold-gradient shadow-gold hover:shadow-gold-lg"
+          ? "bg-dark-800 border border-gold-500/40 shadow-gold"
+          : "bg-gold-gradient shadow-gold hover:shadow-gold-lg animate-pulse-gold"
       )}
     >
+      <span className="absolute inset-0 rounded-full bg-gold-gradient opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+
       <motion.div
-        animate={isOpen ? { rotate: 0 } : { rotate: [0, 0] }}
-        className="relative"
+        initial={false}
+        animate={{ rotate: isOpen ? 90 : 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 22 }}
       >
-        <Sparkles
-          size={26}
-          className={cn(
-            isOpen ? "text-gold-400" : "text-dark-900"
-          )}
-        />
-        {!isOpen && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-gold-200 rounded-full animate-pulse-gold" />
+        {isOpen ? (
+          <X size={24} className="text-gold-400" />
+        ) : (
+          <MessageCircle size={26} className="text-dark-900" strokeWidth={2.25} />
         )}
       </motion.div>
 
-      {!isOpen && unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-gold-500 text-dark-900 text-xs font-bold rounded-full">
-          {unreadCount}
-        </span>
+      {!isOpen && (
+        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gold-200 rounded-full ring-2 ring-dark-900" />
       )}
 
-      <span className="absolute right-full mr-3 px-3 py-1.5 bg-dark-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gold-500/20">
+      <span className="absolute right-full mr-3 px-3 py-1.5 bg-dark-800/95 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gold-500/20 backdrop-blur-sm">
         KI-Berater
       </span>
     </motion.button>
