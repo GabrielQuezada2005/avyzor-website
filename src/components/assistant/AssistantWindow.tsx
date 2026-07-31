@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, RotateCcw, Sparkles } from "lucide-react";
 import { ASSISTANT_CONFIG } from "@/lib/assistant";
 import { AssistantMessage, AssistantTypingIndicator } from "./AssistantMessage";
-import { AssistantInput } from "./AssistantInput";
+import { AssistantVoiceInput } from "./voice/AssistantVoiceInput";
 import type { ChatMessage, QuickReply } from "@/lib/assistant";
 
 interface AssistantWindowProps {
@@ -148,7 +148,7 @@ export function AssistantWindow({
             )}
 
             <div className="px-4 pb-4 pt-2 border-t border-gold-500/10 bg-dark-800/50">
-              <AssistantInput
+              <AssistantVoiceInput
                 onSend={onSend}
                 disabled={isTyping}
                 placeholder={ASSISTANT_CONFIG.placeholder}

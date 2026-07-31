@@ -3,6 +3,7 @@
 import { AssistantButton } from "./AssistantButton";
 import { AssistantWindow } from "./AssistantWindow";
 import { SpeechProvider } from "./tts/SpeechContext";
+import { VoiceProvider } from "./voice/VoiceContext";
 import { useAssistant } from "./useAssistant";
 
 export function AssistantWidget() {
@@ -18,15 +19,21 @@ export function AssistantWidget() {
 
   return (
     <SpeechProvider>
-      <AssistantWindow
-        isOpen={isOpen}
+      <VoiceProvider
         messages={messages}
         isTyping={isTyping}
-        onClose={close}
         onSend={sendMessage}
-        onClear={clearMessages}
-      />
-      <AssistantButton isOpen={isOpen} onClick={toggle} />
+      >
+        <AssistantWindow
+          isOpen={isOpen}
+          messages={messages}
+          isTyping={isTyping}
+          onClose={close}
+          onSend={sendMessage}
+          onClear={clearMessages}
+        />
+        <AssistantButton isOpen={isOpen} onClick={toggle} />
+      </VoiceProvider>
     </SpeechProvider>
   );
 }
