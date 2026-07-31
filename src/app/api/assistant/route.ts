@@ -104,11 +104,17 @@ export async function POST(request: NextRequest) {
       const { industryPrompt, result: industryResult } =
         processIndustryRecognition({ sessionId, messages });
 
+      const { briefingPrompt, result: briefingResult } = processProjectBriefing(
+        { sessionId, messages }
+      );
+
       const { recommendationPrompt, result: recommendationResult } =
         processRecommendations({
           sessionId,
           messages,
           leadScoreResult: scoreResult,
+          briefing: briefingResult,
+          industryLabel: industryResult.primary?.label ?? null,
         });
 
       const { objectionPrompt, result: objectionResult } =
@@ -123,10 +129,6 @@ export async function POST(request: NextRequest) {
 
       const { personalityPrompt, result: personalityResult } =
         processPersonalityAnalysis({ sessionId, messages });
-
-      const { briefingPrompt, result: briefingResult } = processProjectBriefing(
-        { sessionId, messages }
-      );
 
       const { proactivePrompt, result: proactiveResult } =
         processProactiveConsultation({
@@ -157,7 +159,7 @@ export async function POST(request: NextRequest) {
         `[industry-recognition] session=${sessionId} status=${industryResult.status} industry=${industryResult.primary?.label ?? "unknown"}`
       );
       console.info(
-        `[recommendations] session=${sessionId} package=${recommendationResult.primary.packageName} fit=${recommendationResult.primary.fitScore} addons=${recommendationResult.addOns.map((a) => a.name).join(",") || "none"}`
+        `[recommendations] session=${sessionId} offer=${recommendationResult.primary.packageName} fit=${recommendationResult.primary.fitScore} runnerUp=${recommendationResult.runnerUp?.packageName ?? "none"}`
       );
       if (objectionResult.primary) {
         console.info(

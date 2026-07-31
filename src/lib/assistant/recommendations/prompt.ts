@@ -5,6 +5,7 @@
  */
 
 import type { RecommendationResult } from "./types";
+import type { ProjectBriefing } from "../project-briefing/types";
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("de-DE", {
@@ -14,49 +15,113 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
+function formatBriefingContext(briefing?: ProjectBriefing): string[] {
+  if (!briefing) return [];
+  const lines: string[] = ["Gesprächskontext (intern):"];
+  const add = (label: string, value: string | null | string[]) => {
+    if (Array.isArray(value) && value.length > 0) {
+      lines.push(`- ${label}: ${value.join(", ")}`);
+    } else if (value) {
+      lines.push(`- ${label}: ${value}`);
+    }
+  };
+  add("Branche", briefing.client.industry);
+  add("Unternehmensgröße", briefing.client.companySize);
+  add("Ziele", briefing.project.mainGoals);
+  add("Probleme", briefing.project.currentProblems);
+  add("Budget", briefing.commercial.budget);
+  add("Zeitrahmen", briefing.commercial.timeline);
+  add("Website-Status", briefing.context.existingWebsite);
+  add("Funktionen", briefing.requirements.desiredFeatures);
+  add("Marketing", briefing.context.marketingChannels);
+  return lines.length > 1 ? lines : [];
+}
+
 /**
  * Erzeugt internen Prompt mit Empfehlungslogik für die KI.
- * Der Nutzer sieht diese Analyse nie direkt.
  */
-export function buildRecommendationPrompt(result: RecommendationResult): string {
+export function buildRecommendationPrompt(
+  result: RecommendationResult,
+  briefing?: ProjectBriefing
+): string {
   if (!result.shouldRecommend) {
-    return `EMPFEHLUNGS-SYSTEM (INTERN – NUTZER SIEHT DIES NICHT):
-Noch nicht genug Kontext für eine Paketempfehlung.
+    return `ANGEBOTSEMPFEHLUNG (INTERN – NUTZER SIEHT DIES NICHT):
+Noch nicht genug Kontext für eine konkrete Angebotsempfehlung.
 - Kurz beraten (80–180 Wörter, kurze Absätze).
 - Eine gezielte Anschlussfrage stellen, um Kontext zu gewinnen.
 - Keine Pakete oder Preise nennen, es sei denn der Kunde fragt explizit danach.`;
   }
 
-  const { primary, addOns, needs } = result;
   const lines: string[] = [
-    "EMPFEHLUNGS-SYSTEM (INTERN – NUTZER SIEHT DIES NICHT):",
-    'Interne Analyse: "Welches Paket bringt diesem Kunden den größten Mehrwert?"',
+    "ANGEBOTSEMPFEHLUNG (INTERN – NUTZER SIEHT DIES NICHT):",
+    "Interne Analyse: Welches EINE Angebot bringt diesem Kunden den größten Mehrwert?",
     "",
   ];
+
+  const briefingLines = formatBriefingContext(briefing);
+  if (briefingLines.length > 0) {
+    lines.push(...briefingLines, "");
+  }
+
+  const { primary, runnerUp, offerAnalysis, addOns, needs } = result;
 
   if (primary.type === "individual") {
     lines.push(
       "Empfehlung: Individuelle Lösung (kein Standardpaket passt optimal).",
       `Gründe: ${primary.reasons.join("; ")}`,
       "",
-      "Anweisung an dich:",
-      "- Empfehle eine individuelle Lösung – erkläre WARUM kein Standardpaket optimal passt.",
-      "- Kurze Absätze (max. 2–3 Sätze), 80–180 Wörter.",
-      "- Nach der Empfehlung: eine konkrete Anschlussfrage.",
-      "- Biete ein unverbindliches Erstgespräch an, um den Umfang gemeinsam zu definieren."
+      "Anweisung:",
+      "- Genau EINE Empfehlung: individuelle Lösung – begründet und transparent.",
+      "- Erkläre, warum kein Standardpaket optimal passt.",
+      "- Probleme, die gelöst werden, und realistische Ergebnisse nennen.",
+      "- Kein Verkaufsdruck – ehrliche Expertenberatung.",
+      "- Erstgespräch als nächsten Schritt anbieten."
     );
   } else {
     lines.push(
-      `Empfohlenes Paket: ${primary.packageName}${primary.price ? ` (ab ${formatPrice(primary.price)} netto)` : ""}`,
-      `Mehrwert: ${primary.valueProposition}`,
+      `Empfohlenes Angebot (GENAU EINES): ${primary.packageName}${primary.price ? ` (ab ${formatPrice(primary.price)} netto)` : ""}`,
+      `Fit-Score (intern): ${primary.fitScore}`,
       `Gründe: ${primary.reasons.join("; ")}`,
+      ""
+    );
+
+    if (offerAnalysis) {
+      lines.push(
+        "Transparente Begründung (in Antwort einbauen):",
+        `- Warum gewählt: ${offerAnalysis.whyChosen}`,
+        `- Probleme, die gelöst werden: ${offerAnalysis.problemsSolved.join("; ")}`,
+        `- Enthaltene Leistungen: ${offerAnalysis.includedFeatures.join("; ")}`,
+        `- Realistische Ergebnisse: ${offerAnalysis.expectedResults.join("; ")}`
+      );
+
+      if (offerAnalysis.comparisonNote) {
+        lines.push(`- Kurzer Vergleich: ${offerAnalysis.comparisonNote}`);
+      }
+      if (offerAnalysis.budgetAlternative) {
+        lines.push(`- Budget-Alternative: ${offerAnalysis.budgetAlternative}`);
+      }
+      if (offerAnalysis.phasedApproach) {
+        lines.push(`- Phasenweise Umsetzung: ${offerAnalysis.phasedApproach}`);
+      }
+    }
+
+    if (runnerUp && runnerUp.packageId !== primary.packageId) {
+      lines.push(
+        "",
+        `Alternative (intern): ${runnerUp.packageName} – nur kurz vergleichen, wenn sinnvoll.`
+      );
+    }
+
+    lines.push(
       "",
-      "Anweisung an dich:",
-      `- Wenn du ein Paket empfiehlst, erkläre WARUM – z. B.: "Auf Grundlage Ihrer Anforderungen würde ich Ihnen das ${primary.packageName}-Paket empfehlen, da …"`,
-      "- Kurze Absätze (max. 2–3 Sätze), 80–180 Wörter.",
-      "- Nach der Empfehlung: eine konkrete Anschlussfrage zur Priorisierung oder Vertiefung.",
-      "- Nenne niemals ein Paket ohne Begründung.",
-      "- Bereits Genanntes nicht wiederholen."
+      "Anweisung (STRIKT):",
+      `- Empfehle GENAU EIN Angebot: ${primary.packageName}.`,
+      `- Formulierung variieren: „Auf Grundlage Ihrer Ziele empfehle ich …, weil …"`,
+      "- Transparent erklären: Warum dieses Paket, welche Probleme gelöst werden, was enthalten ist, welche Ergebnisse realistisch sind.",
+      "- Kurze Absätze (max. 2–3 Sätze), professionell, ohne Verkaufsdruck.",
+      "- Niemals teurer empfehlen als nötig – ehrlich im Interesse des Kunden.",
+      "- Preise nur nennen, wenn der Kunde danach fragt oder die Empfehlung konkret wird.",
+      "- Nach der Empfehlung: eine konkrete Anschlussfrage oder Erstgespräch anbieten."
     );
   }
 
@@ -71,21 +136,17 @@ Noch nicht genug Kontext für eine Paketempfehlung.
   if (addOns.length > 0) {
     lines.push(
       "",
-      "Mögliche Zusatzleistungen (NUR erwähnen wenn natürlich passend, max. 1–2, nicht aufdringlich):"
+      "Zusatzleistungen (NUR wenn natürlich passend, max. 1, nicht aufdringlich):"
     );
-    for (const addon of addOns) {
+    for (const addon of addOns.slice(0, 1)) {
       lines.push(`- ${addon.name}: ${addon.reasons[0]}`);
     }
-    lines.push(
-      "- Zusatzleistungen nur beiläufig ansprechen, wenn sie echten Mehrwert bieten.",
-      "- Niemals mehrere Add-ons gleichzeitig pushen."
-    );
   }
 
   lines.push(
     "",
-    `Lead-Kategorie: ${result.leadCategory} (Score ${result.leadScore}/100)`,
-    "Erwähne Score, interne Analyse oder Kategorie niemals gegenüber dem Nutzer."
+    `Lead-Kategorie (intern): ${result.leadCategory}`,
+    "Score, Fit-Score und interne Analyse niemals dem Kunden mitteilen."
   );
 
   return lines.join("\n");
@@ -93,13 +154,17 @@ Noch nicht genug Kontext für eine Paketempfehlung.
 
 /**
  * Ob genug Kontext für eine Empfehlung vorliegt.
- * Niedrige Scores: erst beraten, nicht empfehlen.
  */
 export function shouldGenerateRecommendation(
   messageCount: number,
-  leadScore: number
+  leadScore: number,
+  briefingConfidence?: number
 ): boolean {
   if (messageCount < 2) return false;
-  if (leadScore < 20) return false;
-  return true;
+  if (leadScore >= 25) return true;
+  if (messageCount >= 3 && (leadScore >= 20 || (briefingConfidence ?? 0) >= 45)) {
+    return true;
+  }
+  if (leadScore >= 20) return true;
+  return false;
 }

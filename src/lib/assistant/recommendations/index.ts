@@ -6,7 +6,8 @@
 
 import { matchAddOns } from "./addon-matcher";
 import { analyzeCustomerNeeds } from "./needs-analyzer";
-import { matchPackage } from "./package-matcher";
+import { buildOfferAnalysis } from "./offer-builder";
+import { matchPackagesWithAlternatives } from "./package-matcher";
 import {
   buildRecommendationPrompt,
   shouldGenerateRecommendation,
@@ -23,6 +24,7 @@ export type {
   AddOnDefinition,
   CustomerNeeds,
   DetectedFeature,
+  OfferAnalysis,
   PackageProfile,
   PackageRecommendation,
   RecommendationInput,
@@ -36,7 +38,8 @@ export type { RecommendationPersistenceAdapter } from "./store";
 export { ADDON_CATALOG } from "./catalog/addons";
 export { PACKAGE_PROFILES, MIN_PACKAGE_FIT_SCORE } from "./catalog/packages";
 export { analyzeCustomerNeeds } from "./needs-analyzer";
-export { matchPackage } from "./package-matcher";
+export { buildOfferAnalysis } from "./offer-builder";
+export { matchPackage, matchPackagesWithAlternatives } from "./package-matcher";
 export { matchAddOns } from "./addon-matcher";
 export { buildRecommendationPrompt, shouldGenerateRecommendation } from "./prompt";
 export {
@@ -48,29 +51,33 @@ export {
 
 /**
  * Führt die komplette Empfehlungs-Pipeline aus.
- * Ergebnis und Prompt sind intern – der Nutzer sieht sie nie direkt.
  */
 export function processRecommendations(
   input: RecommendationInput
 ): RecommendationPipelineResult {
-  const { sessionId, messages, leadScoreResult } = input;
+  const { sessionId, messages, leadScoreResult, briefing } = input;
 
   const needs = analyzeCustomerNeeds(messages, leadScoreResult.signals);
   const shouldRecommend = shouldGenerateRecommendation(
     leadScoreResult.messageCount,
-    leadScoreResult.score
+    leadScoreResult.score,
+    briefing?.confidenceScore
   );
 
-  const primary = shouldRecommend
-    ? matchPackage(needs, leadScoreResult)
+  const { primary, runnerUp, budgetAlternative } = shouldRecommend
+    ? matchPackagesWithAlternatives(needs, leadScoreResult)
     : {
-        type: "individual" as const,
-        packageId: null,
-        packageName: "Noch nicht bestimmt",
-        price: null,
-        fitScore: 0,
-        reasons: ["Noch nicht genug Kontext"],
-        valueProposition: "",
+        primary: {
+          type: "individual" as const,
+          packageId: null,
+          packageName: "Noch nicht bestimmt",
+          price: null,
+          fitScore: 0,
+          reasons: ["Noch nicht genug Kontext"],
+          valueProposition: "",
+        },
+        runnerUp: null,
+        budgetAlternative: null,
       };
 
   const addOns =
@@ -85,19 +92,42 @@ export function processRecommendations(
           )
         : [];
 
+  const offerAnalysis =
+    shouldRecommend && primary.type === "package"
+      ? buildOfferAnalysis(
+          primary,
+          runnerUp,
+          budgetAlternative,
+          needs,
+          leadScoreResult,
+          briefing
+        )
+      : shouldRecommend && primary.type === "individual"
+        ? buildOfferAnalysis(
+            primary,
+            runnerUp,
+            budgetAlternative,
+            needs,
+            leadScoreResult,
+            briefing
+          )
+        : null;
+
   const result: RecommendationResult = {
     sessionId,
     leadScore: leadScoreResult.score,
     leadCategory: leadScoreResult.category,
     needs,
     primary,
+    runnerUp,
+    offerAnalysis,
     addOns,
     shouldRecommend,
     updatedAt: new Date().toISOString(),
   };
 
   const record = saveRecommendation(result);
-  const recommendationPrompt = buildRecommendationPrompt(result);
+  const recommendationPrompt = buildRecommendationPrompt(result, briefing);
 
   return { result, record, recommendationPrompt };
 }

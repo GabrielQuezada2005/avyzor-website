@@ -5,6 +5,7 @@
  */
 
 import type { LeadCategory, LeadScoreResult, ScoringMessage } from "../lead-scoring/types";
+import type { ProjectBriefing } from "../project-briefing/types";
 
 /** Erkannte Kundenbedürfnisse aus dem Gespräch. */
 export interface CustomerNeeds {
@@ -49,6 +50,18 @@ export interface AddOnRecommendation {
   relevanceScore: number;
 }
 
+/** Detaillierte Angebotsanalyse für die KI-Empfehlung. */
+export interface OfferAnalysis {
+  whyChosen: string;
+  problemsSolved: string[];
+  includedFeatures: string[];
+  expectedResults: string[];
+  comparisonNote: string | null;
+  budgetAlternative: string | null;
+  phasedApproach: string | null;
+  honestyNote: string;
+}
+
 /** Vollständiges Empfehlungsergebnis (intern). */
 export interface RecommendationResult {
   sessionId: string;
@@ -56,6 +69,8 @@ export interface RecommendationResult {
   leadCategory: LeadCategory;
   needs: CustomerNeeds;
   primary: PackageRecommendation;
+  runnerUp: PackageRecommendation | null;
+  offerAnalysis: OfferAnalysis | null;
   addOns: AddOnRecommendation[];
   shouldRecommend: boolean;
   updatedAt: string;
@@ -71,6 +86,8 @@ export interface RecommendationInput {
   sessionId: string;
   messages: ScoringMessage[];
   leadScoreResult: LeadScoreResult;
+  briefing?: ProjectBriefing;
+  industryLabel?: string | null;
 }
 
 /** Modulares Paket-Profil für Matching. */

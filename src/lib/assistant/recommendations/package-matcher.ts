@@ -164,37 +164,116 @@ export function matchPackage(
   needs: CustomerNeeds,
   leadScoreResult: LeadScoreResult
 ): PackageRecommendation {
-  const { signals } = leadScoreResult;
+  return matchPackagesWithAlternatives(needs, leadScoreResult).primary;
+}
 
-  let bestProfile = PACKAGE_PROFILES[0];
-  let bestScore = 0;
+interface ScoredPackage {
+  profile: PackageProfile;
+  score: number;
+  recommendation: PackageRecommendation;
+}
 
-  for (const profile of PACKAGE_PROFILES) {
-    const score =
-      scoreBudgetFit(profile, signals.budget) +
-      scoreFeatureFit(profile, needs.features) +
-      scoreIndustryFit(profile, needs.industry) +
-      scoreGrowthFit(profile, needs.growthPotential) +
-      scoreCompanyFit(profile, signals.companySize) +
-      scoreUrgencyFit(profile, signals.urgency, signals.timeframe);
+function scoreProfile(
+  profile: PackageProfile,
+  needs: CustomerNeeds,
+  signals: LeadScoreResult["signals"]
+): number {
+  return (
+    scoreBudgetFit(profile, signals.budget) +
+    scoreFeatureFit(profile, needs.features) +
+    scoreIndustryFit(profile, needs.industry) +
+    scoreGrowthFit(profile, needs.growthPotential) +
+    scoreCompanyFit(profile, signals.companySize) +
+    scoreUrgencyFit(profile, signals.urgency, signals.timeframe)
+  );
+}
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestProfile = profile;
-    }
-  }
-
-  if (bestScore < MIN_PACKAGE_FIT_SCORE) {
-    return createIndividualRecommendation(needs, bestScore);
-  }
-
+function profileToRecommendation(
+  profile: PackageProfile,
+  needs: CustomerNeeds,
+  score: number
+): PackageRecommendation {
   return {
     type: "package",
-    packageId: bestProfile.id,
-    packageName: bestProfile.name,
-    price: bestProfile.price,
-    fitScore: bestScore,
-    reasons: buildReasons(bestProfile, needs, bestScore),
-    valueProposition: buildValueProposition(bestProfile, needs),
+    packageId: profile.id,
+    packageName: profile.name,
+    price: profile.price,
+    fitScore: score,
+    reasons: buildReasons(profile, needs, score),
+    valueProposition: buildValueProposition(profile, needs),
+  };
+}
+
+function findBudgetAlternative(
+  primary: PackageRecommendation,
+  scored: ScoredPackage[],
+  signals: LeadScoreResult["signals"]
+): PackageRecommendation | null {
+  if (!primary.price) return null;
+
+  const tightBudget =
+    signals.budget === "low_budget" || signals.budget === "none";
+
+  if (!tightBudget && primary.price <= 4990) return null;
+
+  const cheaper = scored
+    .filter(
+      (s) =>
+        s.recommendation.price &&
+        s.recommendation.price < primary.price! &&
+        s.recommendation.packageId !== primary.packageId
+    )
+    .sort((a, b) => b.score - a.score);
+
+  return cheaper[0]?.recommendation ?? null;
+}
+
+/**
+ * Ermittelt Hauptempfehlung, Alternative und Budget-Option.
+ */
+export function matchPackagesWithAlternatives(
+  needs: CustomerNeeds,
+  leadScoreResult: LeadScoreResult
+): {
+  primary: PackageRecommendation;
+  runnerUp: PackageRecommendation | null;
+  budgetAlternative: PackageRecommendation | null;
+} {
+  const { signals } = leadScoreResult;
+
+  const scored: ScoredPackage[] = PACKAGE_PROFILES.map((profile) => {
+    const score = scoreProfile(profile, needs, signals);
+    return {
+      profile,
+      score,
+      recommendation: profileToRecommendation(profile, needs, score),
+    };
+  }).sort((a, b) => b.score - a.score);
+
+  const best = scored[0];
+  const second = scored[1];
+
+  if (!best || best.score < MIN_PACKAGE_FIT_SCORE) {
+    const individual = createIndividualRecommendation(needs, best?.score ?? 0);
+    return {
+      primary: individual,
+      runnerUp: best?.recommendation ?? null,
+      budgetAlternative: null,
+    };
+  }
+
+  const runnerUp =
+    second && second.score >= best.score - 15 ? second.recommendation : null;
+
+  const budgetAlternative = findBudgetAlternative(
+    best.recommendation,
+    scored,
+    signals
+  );
+
+  return {
+    primary: best.recommendation,
+    runnerUp,
+    budgetAlternative,
   };
 }
