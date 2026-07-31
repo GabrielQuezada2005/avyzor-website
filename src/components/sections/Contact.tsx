@@ -2,24 +2,27 @@
 
 import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { QuoteForm } from "@/components/forms/QuoteForm";
 import { BookingForm } from "@/components/forms/BookingForm";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { Mail, FileText, Calendar, ExternalLink } from "lucide-react";
+import { CONTACT_TAB_IDS } from "@/lib/i18n/structures";
 import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const tabs = [
-  { id: "contact", label: "Kontakt", icon: Mail },
-  { id: "quote", label: "Angebot", icon: FileText },
-  { id: "booking", label: "Termin", icon: Calendar },
-] as const;
+const tabIcons = {
+  contact: Mail,
+  quote: FileText,
+  booking: Calendar,
+} as const;
 
-type TabId = (typeof tabs)[number]["id"];
+type TabId = (typeof CONTACT_TAB_IDS)[number];
 
 export function Contact() {
+  const t = useTranslations("contact");
   const [activeTab, setActiveTab] = useState<TabId>("contact");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -28,19 +31,19 @@ export function Contact() {
       let nextIndex = index;
 
       if (e.key === "ArrowRight") {
-        nextIndex = (index + 1) % tabs.length;
+        nextIndex = (index + 1) % CONTACT_TAB_IDS.length;
       } else if (e.key === "ArrowLeft") {
-        nextIndex = (index - 1 + tabs.length) % tabs.length;
+        nextIndex = (index - 1 + CONTACT_TAB_IDS.length) % CONTACT_TAB_IDS.length;
       } else if (e.key === "Home") {
         nextIndex = 0;
       } else if (e.key === "End") {
-        nextIndex = tabs.length - 1;
+        nextIndex = CONTACT_TAB_IDS.length - 1;
       } else {
         return;
       }
 
       e.preventDefault();
-      setActiveTab(tabs[nextIndex].id);
+      setActiveTab(CONTACT_TAB_IDS[nextIndex]);
       tabRefs.current[nextIndex]?.focus();
     },
     []
@@ -50,9 +53,9 @@ export function Contact() {
     <section id="kontakt" className="section-padding relative">
       <div className="container-premium mx-auto">
         <SectionHeading
-          subtitle="Kontakt"
-          title="Lassen Sie uns sprechen"
-          description="Ob Projektanfrage, Angebot oder Termin – wir sind für Sie da."
+          subtitle={t("subtitle")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -64,25 +67,25 @@ export function Contact() {
           >
             <div
               role="tablist"
-              aria-label="Kontaktformular-Tabs"
+              aria-label={t("tabsAriaLabel")}
               className="flex gap-2 mb-6 p-1 glass rounded-xl"
             >
-              {tabs.map((tab, index) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
+              {CONTACT_TAB_IDS.map((id, index) => {
+                const Icon = tabIcons[id];
+                const isActive = activeTab === id;
                 return (
                   <button
-                    key={tab.id}
+                    key={id}
                     ref={(el) => {
                       tabRefs.current[index] = el;
                     }}
                     type="button"
                     role="tab"
-                    id={`tab-${tab.id}`}
+                    id={`tab-${id}`}
                     aria-selected={isActive}
-                    aria-controls={`tabpanel-${tab.id}`}
+                    aria-controls={`tabpanel-${id}`}
                     tabIndex={isActive ? 0 : -1}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => setActiveTab(id)}
                     onKeyDown={(e) => handleTabKeyDown(e, index)}
                     className={cn(
                       "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300",
@@ -92,26 +95,26 @@ export function Contact() {
                     )}
                   >
                     <Icon size={16} aria-hidden="true" />
-                    {tab.label}
+                    {t(`tabs.${id}`)}
                   </button>
                 );
               })}
             </div>
 
             <div className="glass rounded-2xl p-8">
-              {tabs.map((tab) => (
+              {CONTACT_TAB_IDS.map((id) => (
                 <div
-                  key={tab.id}
+                  key={id}
                   role="tabpanel"
-                  id={`tabpanel-${tab.id}`}
-                  aria-labelledby={`tab-${tab.id}`}
-                  hidden={activeTab !== tab.id}
+                  id={`tabpanel-${id}`}
+                  aria-labelledby={`tab-${id}`}
+                  hidden={activeTab !== id}
                 >
-                  {activeTab === tab.id && (
+                  {activeTab === id && (
                     <>
-                      {tab.id === "contact" && <ContactForm />}
-                      {tab.id === "quote" && <QuoteForm />}
-                      {tab.id === "booking" && <BookingForm />}
+                      {id === "contact" && <ContactForm />}
+                      {id === "quote" && <QuoteForm />}
+                      {id === "booking" && <BookingForm />}
                     </>
                   )}
                 </div>
@@ -127,10 +130,10 @@ export function Contact() {
           >
             <div className="glass rounded-2xl p-6">
               <h3 className="text-white font-semibold mb-4">
-                Calendly Terminbuchung
+                {t("sidebar.calendly.title")}
               </h3>
               <p className="text-white/50 text-sm mb-4">
-                Buchen Sie direkt einen Termin in unserem Kalender.
+                {t("sidebar.calendly.description")}
               </p>
               <a
                 href={SITE_CONFIG.calendly}
@@ -138,13 +141,15 @@ export function Contact() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-gold-400 hover:text-gold-300 text-sm font-medium transition-colors"
               >
-                Termin wählen
+                {t("sidebar.calendly.button")}
                 <ExternalLink size={14} aria-hidden="true" />
               </a>
             </div>
 
             <div className="glass rounded-2xl p-6">
-              <h3 className="text-white font-semibold mb-4">Direkter Kontakt</h3>
+              <h3 className="text-white font-semibold mb-4">
+                {t("sidebar.direct.title")}
+              </h3>
               <div className="space-y-3 text-sm">
                 <a
                   href={`mailto:${SITE_CONFIG.email}`}
@@ -164,9 +169,11 @@ export function Contact() {
             </div>
 
             <div className="glass-gold rounded-2xl p-6">
-              <h3 className="text-white font-semibold mb-2">Newsletter</h3>
+              <h3 className="text-white font-semibold mb-2">
+                {t("sidebar.newsletter.title")}
+              </h3>
               <p className="text-white/50 text-sm mb-4">
-                KI-Trends, Tipps und exklusive Insights.
+                {t("sidebar.newsletter.description")}
               </p>
               <NewsletterForm />
             </div>

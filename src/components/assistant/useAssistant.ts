@@ -11,10 +11,18 @@ import {
   type UseAssistantReturn,
 } from "@/lib/assistant";
 
-export function useAssistant(): UseAssistantReturn {
+interface UseAssistantOptions {
+  welcomeMessage?: string;
+  locale?: string;
+}
+
+export function useAssistant(options?: UseAssistantOptions): UseAssistantReturn {
+  const welcomeMessage = options?.welcomeMessage;
+  const locale = options?.locale;
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    createWelcomeMessage(),
+    createWelcomeMessage(welcomeMessage),
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,9 +38,9 @@ export function useAssistant(): UseAssistantReturn {
 
   const clearMessages = useCallback(() => {
     sessionIdRef.current = createAssistantSessionId();
-    setMessages([createWelcomeMessage()]);
+    setMessages([createWelcomeMessage(welcomeMessage)]);
     setError(null);
-  }, []);
+  }, [welcomeMessage]);
 
   const sendMessage = useCallback(async (content: string) => {
     const trimmed = content.trim();
@@ -58,7 +66,8 @@ export function useAssistant(): UseAssistantReturn {
       const response = await generateAssistantResponse(
         trimmed,
         conversationHistory,
-        sessionIdRef.current
+        sessionIdRef.current,
+        locale
       );
 
       const assistantMessage: ChatMessage = {
@@ -93,7 +102,7 @@ export function useAssistant(): UseAssistantReturn {
       setIsTyping(false);
       isProcessingRef.current = false;
     }
-  }, []);
+  }, [locale]);
 
   return {
     isOpen,

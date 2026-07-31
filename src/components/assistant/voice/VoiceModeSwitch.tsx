@@ -7,41 +7,27 @@
  */
 
 import { MessageSquare, MessagesSquare, Mic } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { VoiceMode } from "@/lib/assistant/voice";
 import { useVoice } from "./VoiceContext";
 
-const MODES: Array<{
-  id: VoiceMode;
-  label: string;
-  shortLabel: string;
-  icon: typeof MessageSquare;
-  ariaLabel: string;
-}> = [
-  {
-    id: "text-only",
-    label: "Nur Text",
-    shortLabel: "Text",
-    icon: MessageSquare,
-    ariaLabel: "Nur Textmodus",
-  },
-  {
-    id: "text-and-voice",
-    label: "Text + Sprache",
-    shortLabel: "Text+",
-    icon: MessagesSquare,
-    ariaLabel: "Text- und Sprachmodus",
-  },
-  {
-    id: "voice-only",
-    label: "Nur Sprache",
-    shortLabel: "Voice",
-    icon: Mic,
-    ariaLabel: "Nur Sprachmodus",
-  },
-];
+const MODE_IDS: VoiceMode[] = ["text-only", "text-and-voice", "voice-only"];
+
+const MODE_ICONS = {
+  "text-only": MessageSquare,
+  "text-and-voice": MessagesSquare,
+  "voice-only": Mic,
+} as const;
+
+const MODE_KEYS = {
+  "text-only": "textOnly",
+  "text-and-voice": "textAndVoice",
+  "voice-only": "voiceOnly",
+} as const;
 
 export function VoiceModeSwitch() {
+  const t = useTranslations("voice");
   const { voiceMode, setVoiceMode, isVoiceSupported } = useVoice();
 
   if (!isVoiceSupported) return null;
@@ -49,11 +35,13 @@ export function VoiceModeSwitch() {
   return (
     <div
       role="radiogroup"
-      aria-label="Voice Mode auswählen"
+      aria-label={t("modeGroupAriaLabel")}
       className="flex items-center gap-1 p-0.5 rounded-lg bg-dark-700/50 border border-white/5"
     >
-      {MODES.map(({ id, shortLabel, icon: Icon, ariaLabel }) => {
+      {MODE_IDS.map((id) => {
         const isActive = voiceMode === id;
+        const modeKey = MODE_KEYS[id];
+        const Icon = MODE_ICONS[id];
 
         return (
           <button
@@ -61,8 +49,8 @@ export function VoiceModeSwitch() {
             type="button"
             role="radio"
             aria-checked={isActive}
-            aria-label={ariaLabel}
-            title={MODES.find((m) => m.id === id)?.label}
+            aria-label={t(`modes.${modeKey}.ariaLabel`)}
+            title={t(`modes.${modeKey}.label`)}
             onClick={() => setVoiceMode(id)}
             className={cn(
               "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all duration-200",
@@ -73,7 +61,9 @@ export function VoiceModeSwitch() {
             )}
           >
             <Icon size={11} aria-hidden="true" />
-            <span className="hidden sm:inline">{shortLabel}</span>
+            <span className="hidden sm:inline">
+              {t(`modes.${modeKey}.shortLabel`)}
+            </span>
           </button>
         );
       })}

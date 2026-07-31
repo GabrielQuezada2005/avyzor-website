@@ -1,24 +1,32 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
-import { SERVICES } from "@/lib/constants";
+import { SERVICE_IDS } from "@/lib/i18n/structures";
 import { Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export function ContactForm() {
+  const t = useTranslations("forms.contact");
+  const tCommon = useTranslations("forms.common");
+  const tServices = useTranslations("services.items");
+
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const serviceOptions = [
-    { value: "", label: "Leistung wählen (optional)" },
-    ...SERVICES.map((s) => ({ value: s.title, label: s.title })),
+    { value: "", label: t("service.placeholder") },
+    ...SERVICE_IDS.map((id) => ({
+      value: tServices(`${id}.title`),
+      label: tServices(`${id}.title`),
+    })),
   ];
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -51,9 +59,7 @@ export function ContactForm() {
 
       if (!res.ok) {
         if (result.errors) setErrors(result.errors);
-        setErrorMessage(
-          result.error ?? "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
-        );
+        setErrorMessage(result.error ?? t("error"));
         setStatus("error");
         return;
       }
@@ -61,7 +67,7 @@ export function ContactForm() {
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch {
-      setErrorMessage("Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.");
+      setErrorMessage(tCommon("networkError"));
       setStatus("error");
     } finally {
       setIsLoading(false);
@@ -76,8 +82,8 @@ export function ContactForm() {
         <Input
           id="name"
           name="name"
-          label="Name *"
-          placeholder="Ihr Name"
+          label={t("name.label")}
+          placeholder={t("name.placeholder")}
           required
           error={errors.name}
         />
@@ -85,8 +91,8 @@ export function ContactForm() {
           id="email"
           name="email"
           type="email"
-          label="E-Mail *"
-          placeholder="ihre@email.de"
+          label={t("email.label")}
+          placeholder={t("email.placeholder")}
           required
           error={errors.email}
         />
@@ -97,29 +103,29 @@ export function ContactForm() {
           id="phone"
           name="phone"
           type="tel"
-          label="Telefon"
-          placeholder="+49 ..."
+          label={t("phone.label")}
+          placeholder={t("phone.placeholder")}
         />
         <Input
           id="company"
           name="company"
-          label="Unternehmen"
-          placeholder="Ihre Firma"
+          label={t("company.label")}
+          placeholder={t("company.placeholder")}
         />
       </div>
 
       <Select
         id="service"
         name="service"
-        label="Gewünschte Leistung"
+        label={t("service.label")}
         options={serviceOptions}
       />
 
       <Textarea
         id="message"
         name="message"
-        label="Nachricht *"
-        placeholder="Erzählen Sie uns von Ihrem Projekt..."
+        label={t("message.label")}
+        placeholder={t("message.placeholder")}
         required
         error={errors.message}
       />
@@ -130,7 +136,7 @@ export function ContactForm() {
         {status === "success" && (
           <div className="flex items-center gap-2 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm mb-5">
             <CheckCircle size={18} aria-hidden="true" />
-            Vielen Dank! Wir melden uns innerhalb von 24 Stunden.
+            {t("success")}
           </div>
         )}
 
@@ -144,7 +150,7 @@ export function ContactForm() {
 
       <Button type="submit" size="lg" isLoading={isLoading} className="w-full">
         <Send size={18} />
-        Nachricht senden
+        {t("submit")}
       </Button>
     </form>
   );

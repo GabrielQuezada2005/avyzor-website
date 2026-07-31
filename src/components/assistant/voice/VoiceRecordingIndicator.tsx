@@ -8,9 +8,11 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useVoice } from "./VoiceContext";
 
 export function VoiceRecordingIndicator() {
+  const t = useTranslations("voice");
   const { recordingState, interimTranscript, isVoiceInputActive } = useVoice();
 
   const isVisible =
@@ -40,8 +42,8 @@ export function VoiceRecordingIndicator() {
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-gold-400/80 font-medium mb-0.5">
                 {recordingState === "processing"
-                  ? "Sprache wird erkannt…"
-                  : "Ich höre zu…"}
+                  ? t("recording.processing")
+                  : t("recording.listening")}
               </p>
               {interimTranscript && (
                 <p className="text-xs text-white/70 truncate">

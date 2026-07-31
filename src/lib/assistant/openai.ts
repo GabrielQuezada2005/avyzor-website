@@ -8,6 +8,7 @@ import {
   isOpenAIConfigured,
 } from "@/lib/env.server";
 import { AssistantServiceError } from "./errors";
+import { buildLocaleInstruction } from "./locale-prompt";
 import { buildAssistantSystemPrompt } from "./system-prompt";
 import type { AssistantRequest } from "./validation";
 
@@ -16,6 +17,7 @@ const MAX_HISTORY_MESSAGES = 20;
 export interface GenerateOpenAIOptions {
   /** Interner Prompt-Zusatz für Lead-Scoring-Verhaltensanpassung (unsichtbar für Nutzer). */
   leadBehaviorPrompt?: string;
+  locale?: string;
 }
 
 let openaiClient: OpenAI | null = null;
@@ -59,6 +61,7 @@ export async function generateOpenAIResponse(
   const maxTokens = getOpenAIMaxTokens();
 
   const systemPrompt = [
+    options?.locale ? buildLocaleInstruction(options.locale) : undefined,
     buildAssistantSystemPrompt(),
     options?.leadBehaviorPrompt,
   ]

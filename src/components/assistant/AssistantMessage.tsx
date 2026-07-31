@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatTime } from "@/lib/i18n/format";
 import type { ChatMessage } from "@/lib/assistant";
 import { Bot, User } from "lucide-react";
 import { MessageSpeechButton } from "./tts/MessageSpeechButton";
@@ -11,14 +13,8 @@ interface AssistantMessageProps {
   index: number;
 }
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("de-DE", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export function AssistantMessage({ message, index }: AssistantMessageProps) {
+  const locale = useLocale();
   const isUser = message.role === "user";
   const isError = message.status === "error";
 
@@ -75,7 +71,7 @@ export function AssistantMessage({ message, index }: AssistantMessageProps) {
             />
           )}
           <span className="text-[10px] text-white/30">
-            {formatTime(message.timestamp)}
+            {formatTime(message.timestamp, locale)}
           </span>
         </div>
       </div>

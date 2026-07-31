@@ -7,6 +7,7 @@
  */
 
 import { Globe } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_LANGUAGES } from "@/lib/assistant/voice";
 import { useVoice } from "./VoiceContext";
@@ -16,6 +17,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ compact = true }: LanguageSelectorProps) {
+  const t = useTranslations("voice");
   const { language, setLanguage, isVoiceSupported } = useVoice();
 
   if (!isVoiceSupported) return null;
@@ -28,13 +30,13 @@ export function LanguageSelector({ compact = true }: LanguageSelectorProps) {
         aria-hidden="true"
       />
       <label htmlFor="voice-language-select" className="sr-only">
-        Sprache für Sprachmodus
+        {t("language.label")}
       </label>
       <select
         id="voice-language-select"
         value={language}
         onChange={(e) => setLanguage(e.target.value)}
-        aria-label="Sprache für Sprachmodus auswählen"
+        aria-label={t("language.selectAriaLabel")}
         className={cn(
           "bg-dark-700/60 border border-white/10 rounded-md text-white/70",
           "focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/30",

@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
-import { SERVICES, SITE_CONFIG } from "@/lib/constants";
+import { SERVICE_IDS } from "@/lib/i18n/structures";
+import { SITE_CONFIG } from "@/lib/constants";
 import { Calendar, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
 
 const timeSlots = [
@@ -17,20 +19,31 @@ const timeSlots = [
 ];
 
 export function BookingForm() {
+  const t = useTranslations("forms.booking");
+  const tCommon = useTranslations("forms.common");
+  const tServices = useTranslations("services.items");
+
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const serviceOptions = [
-    { value: "", label: "Art der Beratung" },
-    ...SERVICES.map((s) => ({ value: s.title, label: s.title })),
-    { value: "Erstberatung", label: "Kostenlose Erstberatung" },
+    { value: "", label: t("service.placeholder") },
+    ...SERVICE_IDS.map((id) => ({
+      value: tServices(`${id}.title`),
+      label: tServices(`${id}.title`),
+    })),
+    { value: t("service.freeConsultation"), label: t("service.freeConsultation") },
   ];
 
+  const timeSuffix = t("time.suffix");
   const timeOptions = [
-    { value: "", label: "Uhrzeit wählen *" },
-    ...timeSlots.map((t) => ({ value: t, label: `${t} Uhr` })),
+    { value: "", label: t("time.placeholder") },
+    ...timeSlots.map((slot) => ({
+      value: slot,
+      label: timeSuffix ? `${slot} ${timeSuffix}` : slot,
+    })),
   ];
 
   const tomorrow = new Date();
@@ -61,9 +74,7 @@ export function BookingForm() {
 
       if (!res.ok) {
         if (result.errors) setErrors(result.errors);
-        setErrorMessage(
-          result.error ?? "Fehler bei der Buchung. Bitte versuchen Sie es erneut."
-        );
+        setErrorMessage(result.error ?? t("error"));
         setStatus("error");
         return;
       }
@@ -71,7 +82,7 @@ export function BookingForm() {
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch {
-      setErrorMessage("Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.");
+      setErrorMessage(tCommon("networkError"));
       setStatus("error");
     } finally {
       setIsLoading(false);
@@ -81,9 +92,7 @@ export function BookingForm() {
   return (
     <div className="space-y-6">
       <div className="p-4 rounded-xl bg-gold-500/10 border border-gold-500/20">
-        <p className="text-sm text-white/70 mb-3">
-          Für die schnellste Terminbuchung nutzen Sie unseren Online-Kalender:
-        </p>
+        <p className="text-sm text-white/70 mb-3">{t("calendlyHint")}</p>
         <a
           href={SITE_CONFIG.calendly}
           target="_blank"
@@ -91,15 +100,15 @@ export function BookingForm() {
           className="inline-flex items-center gap-2 text-gold-400 hover:text-gold-300 text-sm font-medium transition-colors"
         >
           <Calendar size={16} aria-hidden="true" />
-          Termin über Calendly buchen
+          {t("calendlyLink")}
           <ExternalLink size={14} aria-hidden="true" />
         </a>
       </div>
 
       <details className="group">
         <summary className="text-sm text-white/50 cursor-pointer hover:text-white/70 transition-colors list-none flex items-center gap-2">
-          <span className="group-open:hidden">Alternativ: Anfrage per Formular</span>
-          <span className="hidden group-open:inline">Anfrage per Formular</span>
+          <span className="group-open:hidden">{t("formToggleClosed")}</span>
+          <span className="hidden group-open:inline">{t("formToggleOpen")}</span>
         </summary>
 
         <form onSubmit={handleSubmit} className="space-y-5 relative mt-5">
@@ -109,7 +118,7 @@ export function BookingForm() {
             <Input
               id="booking-name"
               name="name"
-              label="Name *"
+              label={t("name.label")}
               required
               error={errors.name}
             />
@@ -117,20 +126,20 @@ export function BookingForm() {
               id="booking-email"
               name="email"
               type="email"
-              label="E-Mail *"
+              label={t("email.label")}
               required
               error={errors.email}
             />
           </div>
 
-          <Input id="booking-phone" name="phone" type="tel" label="Telefon" />
+          <Input id="booking-phone" name="phone" type="tel" label={t("phone.label")} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Input
               id="booking-date"
               name="date"
               type="date"
-              label="Datum *"
+              label={t("date.label")}
               min={minDate}
               required
               error={errors.date}
@@ -138,7 +147,7 @@ export function BookingForm() {
             <Select
               id="booking-time"
               name="time"
-              label="Uhrzeit *"
+              label={t("time.label")}
               options={timeOptions}
               required
               error={errors.time}
@@ -148,15 +157,15 @@ export function BookingForm() {
           <Select
             id="booking-service"
             name="service"
-            label="Beratungsart"
+            label={t("service.label")}
             options={serviceOptions}
           />
 
           <Textarea
             id="booking-notes"
             name="notes"
-            label="Anmerkungen"
-            placeholder="Was möchten Sie besprechen?"
+            label={t("notes.label")}
+            placeholder={t("notes.placeholder")}
           />
 
           <ConsentCheckbox id="booking-consent" error={errors.consent} />
@@ -165,7 +174,7 @@ export function BookingForm() {
             {status === "success" && (
               <div className="flex items-center gap-2 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm mb-5">
                 <CheckCircle size={18} aria-hidden="true" />
-                Terminanfrage erhalten! Bestätigung per E-Mail folgt.
+                {t("success")}
               </div>
             )}
 
@@ -179,7 +188,7 @@ export function BookingForm() {
 
           <Button type="submit" size="lg" isLoading={isLoading} className="w-full">
             <Calendar size={18} />
-            Terminanfrage senden
+            {t("submit")}
           </Button>
         </form>
       </details>

@@ -8,6 +8,7 @@
 
 import { motion } from "framer-motion";
 import { Volume2, Pause, Square } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useSpeech } from "./SpeechContext";
 
@@ -20,6 +21,7 @@ export function MessageSpeechButton({
   messageId,
   text,
 }: MessageSpeechButtonProps) {
+  const t = useTranslations("tts");
   const { activeMessageId, playbackState, playMessage, pause, resume, stop } =
     useSpeech();
 
@@ -49,20 +51,20 @@ export function MessageSpeechButton({
   };
 
   const playPauseLabel = !isActive
-    ? "Nachricht vorlesen"
+    ? t("play")
     : isLoading
-      ? "Wiedergabe wird geladen"
+      ? t("loading")
       : isPlaying
-        ? "Wiedergabe pausieren"
+        ? t("pause")
         : isPaused
-          ? "Wiedergabe fortsetzen"
-          : "Nachricht vorlesen";
+          ? t("resume")
+          : t("play");
 
   return (
     <div
       className="inline-flex items-center gap-0.5"
       role="group"
-      aria-label="Sprachausgabe-Steuerung"
+      aria-label={t("controlsAriaLabel")}
     >
       <button
         type="button"
@@ -105,7 +107,7 @@ export function MessageSpeechButton({
         <button
           type="button"
           onClick={handleStop}
-          aria-label="Wiedergabe stoppen"
+          aria-label={t("stop")}
           className={cn(
             "flex items-center justify-center w-6 h-6 rounded-md",
             "text-white/35 hover:text-red-300 hover:bg-red-500/10",

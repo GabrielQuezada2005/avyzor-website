@@ -2,32 +2,34 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { FAQ_ITEMS } from "@/lib/constants";
+import { FAQ_IDS } from "@/lib/i18n/structures";
 import { cn } from "@/lib/utils";
 
 export function FAQ() {
+  const t = useTranslations("faq");
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <section id="faq" className="section-padding relative bg-dark-950/50">
       <div className="container-premium mx-auto">
         <SectionHeading
-          subtitle="FAQ"
-          title="Häufig gestellte Fragen"
-          description="Alles, was Sie wissen müssen, bevor wir gemeinsam durchstarten."
+          subtitle={t("subtitle")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="max-w-3xl mx-auto space-y-3">
-          {FAQ_ITEMS.map((item, index) => {
+          {FAQ_IDS.map((id, index) => {
             const isOpen = openIndex === index;
             const panelId = `faq-panel-${index}`;
             const buttonId = `faq-button-${index}`;
 
             return (
               <motion.div
-                key={index}
+                key={id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -43,7 +45,7 @@ export function FAQ() {
                   className="w-full flex items-center justify-between p-6 text-left hover:bg-white/[0.02] transition-colors"
                 >
                   <span className="text-white font-medium pr-4">
-                    {item.question}
+                    {t(`items.${id}.question`)}
                   </span>
                   <ChevronDown
                     size={20}
@@ -68,7 +70,7 @@ export function FAQ() {
                       className="overflow-hidden"
                     >
                       <div className="px-6 pb-6 text-white/60 text-sm leading-relaxed">
-                        {item.answer}
+                        {t(`items.${id}.answer`)}
                       </div>
                     </motion.div>
                   )}

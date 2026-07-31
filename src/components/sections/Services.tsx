@@ -1,28 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Globe,
-  Bot,
-  Zap,
-  Calendar,
-  Link as LinkIcon,
-  Search,
-  Shield,
-  type LucideIcon,
-} from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { SERVICES } from "@/lib/constants";
-
-const iconMap: Record<string, LucideIcon> = {
-  Globe,
-  Bot,
-  Zap,
-  Calendar,
-  Link: LinkIcon,
-  Search,
-  Shield,
-};
+import { SERVICE_IDS, SERVICE_ICONS } from "@/lib/i18n/structures";
+import { getLucideIcon } from "@/lib/i18n/icons";
 
 const containerVariants = {
   hidden: {},
@@ -41,13 +23,15 @@ const itemVariants = {
 };
 
 export function Services() {
+  const t = useTranslations("services");
+
   return (
     <section id="leistungen" className="section-padding relative">
       <div className="container-premium mx-auto">
         <SectionHeading
-          subtitle="Leistungen"
-          title="Was wir für Sie tun"
-          description="Vom Premium-Auftritt bis zur vollautomatisierten KI-Lösung – alles aus einer Hand."
+          subtitle={t("subtitle")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <motion.div
@@ -57,11 +41,13 @@ export function Services() {
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {SERVICES.map((service) => {
-            const Icon = iconMap[service.icon];
+          {SERVICE_IDS.map((id) => {
+            const Icon = getLucideIcon(SERVICE_ICONS[id]);
+            const features = t.raw(`items.${id}.features`) as string[];
+
             return (
               <motion.div
-                key={service.id}
+                key={id}
                 variants={itemVariants}
                 className="premium-card group cursor-default"
               >
@@ -71,13 +57,13 @@ export function Services() {
                   )}
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold-400 transition-colors">
-                  {service.title}
+                  {t(`items.${id}.title`)}
                 </h3>
                 <p className="text-white/50 text-sm leading-relaxed mb-4">
-                  {service.description}
+                  {t(`items.${id}.description`)}
                 </p>
                 <ul className="space-y-2">
-                  {service.features.map((feature) => (
+                  {features.map((feature) => (
                     <li
                       key={feature}
                       className="flex items-center gap-2 text-sm text-white/40"

@@ -31,7 +31,8 @@ function toApiMessages(
 export async function generateAssistantResponse(
   _userMessage: string,
   history: ChatMessage[],
-  sessionId?: string
+  sessionId?: string,
+  locale?: string
 ): Promise<string> {
   const messages = toApiMessages(history);
 
@@ -45,6 +46,7 @@ export async function generateAssistantResponse(
     body: JSON.stringify({
       messages,
       ...(sessionId ? { sessionId } : {}),
+      ...(locale ? { locale } : {}),
     }),
   });
 
@@ -77,11 +79,11 @@ export function createAssistantSessionId(): string {
   return `asst_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
-export function createWelcomeMessage(): ChatMessage {
+export function createWelcomeMessage(content?: string): ChatMessage {
   return {
     id: createMessageId(),
     role: "assistant",
-    content: ASSISTANT_CONFIG.welcomeMessage,
+    content: content ?? ASSISTANT_CONFIG.welcomeMessage,
     timestamp: new Date(),
     status: "sent",
   };

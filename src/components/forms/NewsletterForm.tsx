@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
@@ -8,6 +9,9 @@ import { HoneypotField } from "@/components/forms/HoneypotField";
 import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 
 export function NewsletterForm() {
+  const t = useTranslations("forms.newsletter");
+  const tCommon = useTranslations("forms.common");
+
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -38,9 +42,7 @@ export function NewsletterForm() {
 
       if (!res.ok) {
         if (result.errors) setErrors(result.errors);
-        setErrorMessage(
-          result.error ?? "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
-        );
+        setErrorMessage(result.error ?? t("error"));
         setStatus("error");
         return;
       }
@@ -48,7 +50,7 @@ export function NewsletterForm() {
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch {
-      setErrorMessage("Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.");
+      setErrorMessage(tCommon("networkError"));
       setStatus("error");
     } finally {
       setIsLoading(false);
@@ -65,8 +67,8 @@ export function NewsletterForm() {
             id="newsletter-email"
             name="email"
             type="email"
-            label="E-Mail-Adresse"
-            placeholder="Ihre E-Mail-Adresse"
+            label={t("email.label")}
+            placeholder={t("email.placeholder")}
             required
             className="flex-1"
             error={errors.email}
@@ -77,7 +79,7 @@ export function NewsletterForm() {
             className="shrink-0 sm:self-end"
           >
             <Mail size={18} />
-            Abonnieren
+            {t("submit")}
           </Button>
         </div>
 
@@ -88,7 +90,7 @@ export function NewsletterForm() {
         {status === "success" && (
           <div className="flex items-center gap-2 mt-3 text-green-400 text-sm">
             <CheckCircle size={16} aria-hidden="true" />
-            Bitte bestätigen Sie Ihre Anmeldung über den Link in Ihrer E-Mail.
+            {t("success")}
           </div>
         )}
 

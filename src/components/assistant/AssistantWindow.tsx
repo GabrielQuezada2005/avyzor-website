@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, RotateCcw, Sparkles } from "lucide-react";
-import { ASSISTANT_CONFIG } from "@/lib/assistant";
+import { useTranslations } from "next-intl";
+import { ASSISTANT_QUICK_REPLY_IDS } from "@/lib/i18n/structures";
 import { AssistantMessage, AssistantTypingIndicator } from "./AssistantMessage";
 import { AssistantVoiceInput } from "./voice/AssistantVoiceInput";
 import type { ChatMessage, QuickReply } from "@/lib/assistant";
@@ -25,9 +26,22 @@ export function AssistantWindow({
   onClose,
   onSend,
   onClear,
-  quickReplies = ASSISTANT_CONFIG.quickReplies,
+  quickReplies: quickRepliesProp,
 }: AssistantWindowProps) {
+  const t = useTranslations("assistant");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const quickReplies = useMemo(
+    () =>
+      quickRepliesProp ??
+      ASSISTANT_QUICK_REPLY_IDS.map((id) => ({
+        id,
+        label: t(`quickReplies.${id}.label`),
+        message: t(`quickReplies.${id}.message`),
+      })),
+    [quickRepliesProp, t]
+  );
+
   const showQuickReplies = messages.length <= 1 && !isTyping;
 
   useEffect(() => {
@@ -53,7 +67,7 @@ export function AssistantWindow({
         <>
           <motion.button
             type="button"
-            aria-label="Chat schließen"
+            aria-label={t("window.overlayClose")}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -69,7 +83,7 @@ export function AssistantWindow({
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             className="fixed bottom-44 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] max-h-[min(620px,calc(100vh-12rem))] flex flex-col glass-premium-chat rounded-2xl overflow-hidden"
             role="dialog"
-            aria-label="AVYZOR Assistant Chat"
+            aria-label={t("window.ariaLabel")}
             aria-modal="true"
           >
             <div className="relative flex items-center justify-between px-5 py-4 border-b border-gold-500/10 bg-dark-800/60">
@@ -80,10 +94,10 @@ export function AssistantWindow({
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm leading-tight">
-                    {ASSISTANT_CONFIG.name}
+                    {t("name")}
                   </h3>
                   <p className="text-gold-400/80 text-xs">
-                    {ASSISTANT_CONFIG.tagline}
+                    {t("tagline")}
                   </p>
                 </div>
               </div>
@@ -91,7 +105,7 @@ export function AssistantWindow({
                 <button
                   type="button"
                   onClick={onClear}
-                  aria-label="Chat zurücksetzen"
+                  aria-label={t("buttons.reset")}
                   className="p-2 text-white/40 hover:text-gold-400 transition-colors rounded-lg hover:bg-white/5"
                 >
                   <RotateCcw size={16} />
@@ -99,7 +113,7 @@ export function AssistantWindow({
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label="Chat schließen"
+                  aria-label={t("buttons.close")}
                   className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5"
                 >
                   <X size={18} />
@@ -109,7 +123,7 @@ export function AssistantWindow({
 
             <div className="px-5 py-2 bg-gold-500/5 border-b border-gold-500/10">
               <p className="text-[11px] text-gold-400/70 text-center">
-                {ASSISTANT_CONFIG.statusMessage}
+                {t("statusMessage")}
               </p>
             </div>
 
@@ -151,7 +165,7 @@ export function AssistantWindow({
               <AssistantVoiceInput
                 onSend={onSend}
                 disabled={isTyping}
-                placeholder={ASSISTANT_CONFIG.placeholder}
+                placeholder={t("placeholder")}
               />
             </div>
           </motion.div>

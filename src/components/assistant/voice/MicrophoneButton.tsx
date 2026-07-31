@@ -8,6 +8,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Square, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useVoice } from "./VoiceContext";
 
@@ -16,6 +17,7 @@ interface MicrophoneButtonProps {
 }
 
 export function MicrophoneButton({ disabled = false }: MicrophoneButtonProps) {
+  const t = useTranslations("voice");
   const {
     isVoiceSupported,
     isVoiceInputActive,
@@ -31,10 +33,10 @@ export function MicrophoneButton({ disabled = false }: MicrophoneButtonProps) {
   const isBusy = isRecording || isProcessing;
 
   const label = isRecording
-    ? "Aufnahme stoppen"
+    ? t("mic.stop")
     : isProcessing
-      ? "Sprache wird erkannt"
-      : "Spracheingabe starten";
+      ? t("mic.processing")
+      : t("mic.start");
 
   return (
     <div className="flex items-center gap-0.5">
@@ -85,7 +87,7 @@ export function MicrophoneButton({ disabled = false }: MicrophoneButtonProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={cancelRecording}
-            aria-label="Aufnahme abbrechen"
+            aria-label={t("mic.cancel")}
             className={cn(
               "w-6 h-6 rounded-md flex items-center justify-center",
               "text-white/40 hover:text-red-300 hover:bg-red-500/10",

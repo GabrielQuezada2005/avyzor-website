@@ -1,25 +1,31 @@
 import type { MetadataRoute } from "next";
+import { routing } from "@/i18n/routing";
 import { SITE_CONFIG } from "@/lib/constants";
 
+const staticPaths = ["", "/impressum", "/datenschutz"] as const;
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: SITE_CONFIG.url,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${SITE_CONFIG.url}/impressum`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${SITE_CONFIG.url}/datenschutz`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-  ];
+  const lastModified = new Date();
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const locale of routing.locales) {
+    for (const path of staticPaths) {
+      entries.push({
+        url: `${SITE_CONFIG.url}/${locale}${path}`,
+        lastModified,
+        changeFrequency: path === "" ? "weekly" : "yearly",
+        priority: path === "" ? 1 : 0.3,
+        alternates: {
+          languages: Object.fromEntries(
+            routing.locales.map((loc) => [
+              loc,
+              `${SITE_CONFIG.url}/${loc}${path}`,
+            ])
+          ),
+        },
+      });
+    }
+  }
+
+  return entries;
 }

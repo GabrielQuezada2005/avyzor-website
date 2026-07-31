@@ -10,6 +10,7 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useVoice } from "./VoiceContext";
 import { MicrophoneButton } from "./MicrophoneButton";
@@ -26,8 +27,10 @@ interface AssistantVoiceInputProps {
 export function AssistantVoiceInput({
   onSend,
   disabled = false,
-  placeholder = "Ihre Nachricht eingeben…",
+  placeholder,
 }: AssistantVoiceInputProps) {
+  const tAssistant = useTranslations("assistant");
+  const tVoice = useTranslations("voice");
   const { voiceMode, interimTranscript, isVoiceInputActive, isVoiceSupported } =
     useVoice();
   const [value, setValue] = useState("");
@@ -35,6 +38,7 @@ export function AssistantVoiceInput({
   const isVoiceOnly = voiceMode === "voice-only";
   const displayValue =
     interimTranscript && isVoiceInputActive ? interimTranscript : value;
+  const inputPlaceholder = placeholder ?? tAssistant("placeholder");
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -70,7 +74,7 @@ export function AssistantVoiceInput({
           )}
         >
           <p className="text-xs text-white/45 text-center">
-            Sprechen Sie mit Ihrem Berater – tippen Sie auf das Mikrofon
+            {tVoice("voiceOnlyHint")}
           </p>
           <MicrophoneButton disabled={disabled} />
           {interimTranscript && (
@@ -89,9 +93,9 @@ export function AssistantVoiceInput({
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled || Boolean(interimTranscript && isVoiceInputActive)}
-            placeholder={placeholder}
+            placeholder={inputPlaceholder}
             rows={1}
-            aria-label="Chat-Nachricht"
+            aria-label={tAssistant("window.messageAriaLabel")}
             className={cn(
               "flex-1 resize-none bg-dark-700/60 border border-white/10 rounded-xl pl-4 pr-3 py-3 text-sm text-white placeholder:text-white/30",
               "focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/30 transition-all duration-300",
@@ -106,7 +110,7 @@ export function AssistantVoiceInput({
             <motion.button
               type="submit"
               disabled={disabled || !value.trim()}
-              aria-label="Nachricht senden"
+              aria-label={tAssistant("buttons.send")}
               whileHover={value.trim() && !disabled ? { scale: 1.05 } : undefined}
               whileTap={value.trim() && !disabled ? { scale: 0.92 } : undefined}
               className={cn(

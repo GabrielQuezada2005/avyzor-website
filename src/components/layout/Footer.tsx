@@ -1,6 +1,8 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { NAV_IDS, NAV_HREFS, SERVICE_IDS } from "@/lib/i18n/structures";
+import { SITE_CONFIG } from "@/lib/constants";
 import { Linkedin, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
 const socialLinks = [
@@ -9,7 +11,10 @@ const socialLinks = [
   { href: SITE_CONFIG.social.twitter, label: "Twitter", icon: Twitter },
 ].filter((link) => link.href);
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("footer");
+  const tNav = await getTranslations("nav");
+  const tServices = await getTranslations("services");
   const hasAddress = Boolean(SITE_CONFIG.address.street);
 
   return (
@@ -30,8 +35,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
-              Premium KI-Agentur für digitale Exzellenz. Wir transformieren
-              Unternehmen mit modernster Technologie und erstklassigem Design.
+              {t("tagline")}
             </p>
             {socialLinks.length > 0 && (
               <div className="flex gap-4">
@@ -52,15 +56,15 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-6">Navigation</h3>
+            <h3 className="text-white font-semibold mb-6">{t("navigation")}</h3>
             <ul className="space-y-3">
-              {NAV_LINKS.map((link) => (
-                <li key={link.href}>
+              {NAV_IDS.map((id) => (
+                <li key={id}>
                   <Link
-                    href={link.href}
+                    href={NAV_HREFS[id]}
                     className="text-white/50 hover:text-gold-400 transition-colors text-sm"
                   >
-                    {link.label}
+                    {tNav(id)}
                   </Link>
                 </li>
               ))}
@@ -68,23 +72,15 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-6">Leistungen</h3>
+            <h3 className="text-white font-semibold mb-6">{t("servicesHeading")}</h3>
             <ul className="space-y-3">
-              {[
-                "Premium-Websites",
-                "KI-Chatbots",
-                "KI-Automatisierungen",
-                "Terminbuchung",
-                "CRM-Integration",
-                "SEO",
-                "Wartung",
-              ].map((service) => (
-                <li key={service}>
+              {SERVICE_IDS.map((id) => (
+                <li key={id}>
                   <Link
                     href="/#leistungen"
                     className="text-white/50 hover:text-gold-400 transition-colors text-sm"
                   >
-                    {service}
+                    {tServices(`items.${id}.title`)}
                   </Link>
                 </li>
               ))}
@@ -92,7 +88,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-6">Kontakt</h3>
+            <h3 className="text-white font-semibold mb-6">{t("contactHeading")}</h3>
             <ul className="space-y-4">
               {hasAddress && (
                 <li className="flex items-start gap-3 text-sm text-white/50">
@@ -130,20 +126,20 @@ export function Footer() {
 
         <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-white/30 text-sm">
-            © {new Date().getFullYear()} {SITE_CONFIG.name}. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} {SITE_CONFIG.name}. {t("copyright")}
           </p>
           <div className="flex gap-6">
             <Link
               href="/impressum"
               className="text-white/30 hover:text-gold-400 transition-colors text-sm"
             >
-              Impressum
+              {t("imprint")}
             </Link>
             <Link
               href="/datenschutz"
               className="text-white/30 hover:text-gold-400 transition-colors text-sm"
             >
-              Datenschutz
+              {t("privacy")}
             </Link>
           </div>
         </div>

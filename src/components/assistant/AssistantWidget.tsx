@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { AssistantButton } from "./AssistantButton";
 import { AssistantWindow } from "./AssistantWindow";
 import { SpeechProvider } from "./tts/SpeechContext";
@@ -7,6 +9,9 @@ import { VoiceProvider } from "./voice/VoiceContext";
 import { useAssistant } from "./useAssistant";
 
 export function AssistantWidget() {
+  const locale = useLocale();
+  const t = useTranslations("assistant");
+
   const {
     isOpen,
     messages,
@@ -15,11 +20,24 @@ export function AssistantWidget() {
     close,
     sendMessage,
     clearMessages,
-  } = useAssistant();
+  } = useAssistant({
+    welcomeMessage: t("welcomeMessage"),
+    locale,
+  });
+
+  const prevLocaleRef = useRef(locale);
+
+  useEffect(() => {
+    if (prevLocaleRef.current !== locale) {
+      prevLocaleRef.current = locale;
+      clearMessages();
+    }
+  }, [locale, clearMessages]);
 
   return (
     <SpeechProvider>
       <VoiceProvider
+        siteLocale={locale}
         messages={messages}
         isTyping={isTyping}
         onSend={sendMessage}

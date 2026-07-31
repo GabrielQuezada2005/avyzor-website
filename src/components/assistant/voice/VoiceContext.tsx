@@ -17,6 +17,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { localeToBcp47, type Locale } from "@/i18n/routing";
 import { detectLanguageFromText } from "@/lib/assistant/tts";
 import {
   DEFAULT_LANGUAGE,
@@ -52,13 +53,19 @@ const VoiceContext = createContext<VoiceContextValue | null>(null);
 
 interface VoiceProviderProps {
   children: ReactNode;
+  siteLocale: string;
   messages: ChatMessage[];
   isTyping: boolean;
   onSend: (message: string) => void;
 }
 
+function localeToVoiceLanguage(siteLocale: string): string {
+  return localeToBcp47[siteLocale as Locale] ?? DEFAULT_LANGUAGE;
+}
+
 export function VoiceProvider({
   children,
+  siteLocale,
   messages,
   isTyping,
   onSend,
@@ -67,14 +74,18 @@ export function VoiceProvider({
   const prefs = loadVoicePreferences();
 
   const [voiceMode, setVoiceModeState] = useState<VoiceMode>(prefs.mode);
-  const [language, setLanguageState] = useState<string>(prefs.language);
+  const [language, setLanguageState] = useState<string>(
+    localeToVoiceLanguage(siteLocale)
+  );
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
 
   const lastSpokenMessageIdRef = useRef<string | null>(null);
   const onSendRef = useRef(onSend);
+  const voiceModeRef = useRef(voiceMode);
   onSendRef.current = onSend;
+  voiceModeRef.current = voiceMode;
 
   useEffect(() => {
     const engine = getSttEngine();
@@ -84,6 +95,12 @@ export function VoiceProvider({
       setInterimTranscript(interim);
     });
   }, []);
+
+  useEffect(() => {
+    const bcp47 = localeToVoiceLanguage(siteLocale);
+    setLanguageState(bcp47);
+    saveVoicePreferences({ mode: voiceModeRef.current, language: bcp47 });
+  }, [siteLocale]);
 
   const persist = useCallback((mode: VoiceMode, lang: string) => {
     saveVoicePreferences({ mode, language: lang });

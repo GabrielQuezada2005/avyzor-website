@@ -21,6 +21,7 @@ export const assistantRequestSchema = z.object({
     .min(8, "Session-ID zu kurz.")
     .max(64, "Session-ID zu lang.")
     .optional(),
+  locale: z.enum(["de", "en", "es", "fr", "it"]).optional(),
 });
 
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;

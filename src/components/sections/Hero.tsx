@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
@@ -8,6 +9,9 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { scrollToSection } from "@/lib/utils";
 
 export function Hero() {
+  const t = useTranslations("hero");
+  const stats = t.raw("stats") as { value: string; label: string }[];
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <AnimatedBackground />
@@ -24,7 +28,7 @@ export function Hero() {
           >
             <Sparkles size={16} className="text-gold-400" />
             <span className="text-sm text-gold-400 font-medium tracking-wide">
-              Premium KI-Agentur
+              {t("badge")}
             </span>
           </motion.div>
 
@@ -34,9 +38,9 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6"
           >
-            Digitale Exzellenz
+            {t("title1")}
             <br />
-            <span className="text-gradient-gold">trifft KI-Innovation</span>
+            <span className="text-gradient-gold">{t("title2")}</span>
           </motion.h1>
 
           <motion.p
@@ -45,9 +49,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            AVYZOR entwickelt Premium-Websites, intelligente Chatbots und
-            KI-Automatisierungen für Unternehmen, die nichts weniger als
-            Perfektion akzeptieren.
+            {t("description")}
           </motion.p>
 
           <motion.div
@@ -60,7 +62,7 @@ export function Hero() {
               size="lg"
               onClick={() => scrollToSection("kontakt")}
             >
-              Projekt starten
+              {t("cta1")}
               <ArrowRight size={20} />
             </Button>
             <Button
@@ -70,7 +72,7 @@ export function Hero() {
                 window.open(SITE_CONFIG.calendly, "_blank")
               }
             >
-              Kostenlose Beratung
+              {t("cta2")}
             </Button>
           </motion.div>
 
@@ -80,11 +82,7 @@ export function Hero() {
             transition={{ duration: 1, delay: 0.6 }}
             className="mt-20 grid grid-cols-3 gap-8 max-w-lg mx-auto"
           >
-            {[
-              { value: "50+", label: "Projekte" },
-              { value: "98%", label: "Zufriedenheit" },
-              { value: "10k€+", label: "Projektvolumen" },
-            ].map((stat) => (
+            {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-gold-400">
                   {stat.value}

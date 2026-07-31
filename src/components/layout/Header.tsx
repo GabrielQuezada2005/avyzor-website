@@ -3,13 +3,18 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
-import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { Link } from "@/i18n/navigation";
+import { NAV_IDS, NAV_HREFS } from "@/lib/i18n/structures";
+import { SITE_CONFIG } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { cn, scrollToSection } from "@/lib/utils";
 
 export function Header() {
+  const tNav = useTranslations("nav");
+  const t = useTranslations("header");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -54,20 +59,21 @@ export function Header() {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8" aria-label="Hauptnavigation">
-            {NAV_LINKS.map((link) => (
+          <nav className="hidden lg:flex items-center gap-8" aria-label={t("mainNav")}>
+            {NAV_IDS.map((id) => (
               <Link
-                key={link.href}
-                href={link.href}
+                key={id}
+                href={NAV_HREFS[id]}
                 className="relative text-sm text-white/70 hover:text-gold-400 transition-colors duration-300 group"
               >
-                {link.label}
+                {tNav(id)}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-gold-gradient group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
+            <LanguageSwitcher compact />
             <Button
               variant="secondary"
               size="sm"
@@ -75,20 +81,20 @@ export function Header() {
                 window.open(SITE_CONFIG.calendly, "_blank")
               }
             >
-              Beratung buchen
+              {t("bookConsultation")}
             </Button>
             <Button
               size="sm"
               onClick={() => scrollToSection("kontakt")}
             >
-              Projekt starten
+              {t("startProject")}
             </Button>
           </div>
 
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
             className="lg:hidden relative z-50 p-2 text-white"
-            aria-label={isMobileOpen ? "Menü schließen" : "Menü öffnen"}
+            aria-label={isMobileOpen ? t("menuClose") : t("menuOpen")}
             aria-expanded={isMobileOpen}
             aria-controls="mobile-navigation"
           >
@@ -117,25 +123,28 @@ export function Header() {
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-dark-900 border-l border-white/5 p-8 pt-24"
-              aria-label="Mobile Navigation"
+              aria-label={t("mobileNav")}
             >
               <div className="flex flex-col gap-6">
-                {NAV_LINKS.map((link, i) => (
+                {NAV_IDS.map((id, i) => (
                   <motion.div
-                    key={link.href}
+                    key={id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
                     <Link
-                      href={link.href}
+                      href={NAV_HREFS[id]}
                       onClick={() => setIsMobileOpen(false)}
                       className="text-lg text-white/80 hover:text-gold-400 transition-colors"
                     >
-                      {link.label}
+                      {tNav(id)}
                     </Link>
                   </motion.div>
                 ))}
+                <div className="pt-2">
+                  <LanguageSwitcher />
+                </div>
                 <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
                   <Button
                     variant="secondary"
@@ -144,7 +153,7 @@ export function Header() {
                       window.open(SITE_CONFIG.calendly, "_blank");
                     }}
                   >
-                    Beratung buchen
+                    {t("bookConsultation")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -152,7 +161,7 @@ export function Header() {
                       scrollToSection("kontakt");
                     }}
                   >
-                    Projekt starten
+                    {t("startProject")}
                   </Button>
                 </div>
               </div>

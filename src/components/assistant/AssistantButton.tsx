@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface AssistantButtonProps {
@@ -10,6 +11,8 @@ interface AssistantButtonProps {
 }
 
 export function AssistantButton({ isOpen, onClick }: AssistantButtonProps) {
+  const t = useTranslations("assistant");
+
   return (
     <motion.button
       type="button"
@@ -19,7 +22,7 @@ export function AssistantButton({ isOpen, onClick }: AssistantButtonProps) {
       transition={{ delay: 1.2, type: "spring", stiffness: 260, damping: 20 }}
       whileHover={{ scale: 1.06 }}
       whileTap={{ scale: 0.94 }}
-      aria-label={isOpen ? "Chat schließen" : "AVYZOR Assistant öffnen"}
+      aria-label={isOpen ? t("buttons.close") : t("buttons.open")}
       aria-expanded={isOpen}
       className={cn(
         "fixed bottom-24 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full transition-shadow duration-300 group",
@@ -47,7 +50,7 @@ export function AssistantButton({ isOpen, onClick }: AssistantButtonProps) {
       )}
 
       <span className="absolute right-full mr-3 px-3 py-1.5 bg-dark-800/95 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gold-500/20 backdrop-blur-sm">
-        KI-Berater
+        {t("buttons.tooltip")}
       </span>
     </motion.button>
   );

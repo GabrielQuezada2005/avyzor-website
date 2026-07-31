@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages, sessionId } = result.data as AssistantRequest;
+    const { messages, sessionId, locale } = result.data as AssistantRequest;
 
     if (messages[messages.length - 1]?.role !== "user") {
       return NextResponse.json(
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
 
     const message = await generateOpenAIResponse(messages, {
       leadBehaviorPrompt,
+      locale,
     });
 
     return NextResponse.json({ success: true, message });
