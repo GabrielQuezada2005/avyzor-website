@@ -17,7 +17,8 @@ export type ObjectionType =
   | "uncertain"
   | "bad_experiences"
   | "need_to_consult_team"
-  | "do_later";
+  | "do_later"
+  | "no_time";
 
 /** Menschenlesbare Labels (intern / CRM). */
 export const OBJECTION_TYPE_LABELS: Record<ObjectionType, string> = {
@@ -31,6 +32,7 @@ export const OBJECTION_TYPE_LABELS: Record<ObjectionType, string> = {
   bad_experiences: "Schlechte Erfahrungen",
   need_to_consult_team: "Muss mit Partner/Team sprechen",
   do_later: "Später machen",
+  no_time: "Keine Zeit",
 };
 
 /** Modulare Einwand-Definition im Katalog. */
@@ -47,6 +49,8 @@ export interface ObjectionDefinition {
   empathyExamples: string[];
   /** Erklärungs-Hinweise – was die KI einordnen soll. */
   explanationHints: string[];
+  /** Nutzen- statt Feature-Formulierung (Orientierung, nicht wörtlich). */
+  benefitExamples?: string[];
   /** Rückfrage, um den eigentlichen Grund zu verstehen. */
   followUpQuestions: string[];
   /** Sinnvolle nächste Möglichkeit ohne Druck. */

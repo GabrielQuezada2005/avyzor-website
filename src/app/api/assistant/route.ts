@@ -11,6 +11,7 @@ import { processObjectionHandling } from "@/lib/assistant/objection-handling";
 import { processPersonalityAnalysis } from "@/lib/assistant/personality-analysis";
 import { processProjectBriefing } from "@/lib/assistant/project-briefing";
 import { processRecommendations } from "@/lib/assistant/recommendations";
+import { processSalesStrategy } from "@/lib/assistant/sales-strategy";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
   assistantRequestSchema,
@@ -112,6 +113,13 @@ export async function POST(request: NextRequest) {
       const { objectionPrompt, result: objectionResult } =
         processObjectionHandling({ sessionId, messages });
 
+      const { salesStrategyPrompt } = processSalesStrategy({
+        sessionId,
+        messages,
+        leadCategory: scoreResult.category,
+        hasActiveObjection: Boolean(objectionResult.primary),
+      });
+
       const { personalityPrompt, result: personalityResult } =
         processPersonalityAnalysis({ sessionId, messages });
 
@@ -122,6 +130,7 @@ export async function POST(request: NextRequest) {
       leadBehaviorPrompt = [
         behaviorPrompt,
         industryPrompt,
+        salesStrategyPrompt,
         recommendationPrompt,
         objectionPrompt,
         personalityPrompt,

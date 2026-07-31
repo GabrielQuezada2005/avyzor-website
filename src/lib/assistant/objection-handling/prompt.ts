@@ -25,36 +25,52 @@ export function buildObjectionHandlingPrompt(
     `Erkannter Einwand: ${definition.label}`,
     `Zusammenfassung: ${definition.summaryTemplate}`,
     "",
-    "Reaktions-Ablauf (STRIKT einhalten):",
-    "1. Einwand kurz anerkennen – ohne Standardfloskeln.",
-    "2. ZUERST geschäftlichen Nutzen erklären – besonders bei Preiseinwänden.",
-    "3. Kurze Absätze (max. 2–3 Sätze), prägnant – kein Gegenargument.",
-    "4. Passende Alternativen anbieten – ohne Druck.",
-    "5. Konkrete Anschlussfrage oder nächsten Schritt anbieten.",
+    "Reaktions-Ablauf bei Einwand (STRIKT – 3 Schritte):",
+    "1. Verständnis – Einwand kurz anerkennen, individuell auf den Kunden eingehen. Keine Standardfloskeln.",
+    "2. Einordnung – Einwand sachlich entkräften mit Nutzen und Fakten, nicht mit Gegenargumenten oder Aber-Sätzen.",
+    "3. Lösung – Passende Alternative oder Empfehlung geben + konkrete Anschlussfrage.",
     "",
-    "Empathie-Orientierung (Stil, nicht wörtlich):",
+    "WICHTIG:",
+    "- Niemals identische Standardantworten – auf Gesprächskontext und Branche beziehen.",
+    "- Nutzen statt Features: geschäftlichen Mehrwert erklären, nicht Feature-Listen.",
+    "- Kurze Absätze (max. 2–3 Sätze), prägnant.",
+    "- Kein Verkaufsdruck – beraten, nicht überreden.",
+    "",
+    "Empathie-Orientierung (Stil variieren, nicht wörtlich wiederholen):",
     ...definition.empathyExamples.map((e) => `- '${e}'`),
     "",
     "Erklärungs-Hinweise:",
     ...definition.explanationHints.map((h) => `- ${h}`),
+  ];
+
+  if (definition.benefitExamples && definition.benefitExamples.length > 0) {
+    lines.push("", "Nutzen- statt Feature-Formulierung (Orientierung):");
+    lines.push(...definition.benefitExamples.map((b) => `- ${b}`));
+  }
+
+  lines.push(
     "",
-    "Mögliche Rückfrage (eine wählen):",
+    "Mögliche Rückfrage (eine wählen, an Kontext anpassen):",
     ...definition.followUpQuestions.map((q) => `- '${q}'`),
     "",
     "Sinnvolle nächste Schritte (optional, nicht aufdringlich):",
     ...definition.nextStepOffers.map((s) => `- ${s}`),
+    "",
+    "Termin anbieten:",
+    "- Als logischen nächsten Schritt – gemeinsam die beste Lösung entwickeln, nicht als Verkaufsabschluss.",
     "",
     "Falls Einwand nicht auflösbar:",
     ...definition.unresolvedFallback.map((f) => `- ${f}`),
     "",
     "VERBOTEN:",
     "- Aggressiv verkaufen oder unter Druck setzen.",
-    "- 'Aber …', 'Trotzdem …', 'Jetzt zuschlagen'.",
-    "- Einwand ignorieren oder abwürgen.",
+    "- Jetzt zuschlagen, Nur noch heute, Das müssen Sie – niemals verwenden.",
+    "- Einwand ignorieren, abwürgen oder mit Standardtext abhandeln.",
     "- Mehrere Rückfragen gleichzeitig stellen.",
+    "- Erfundene Referenzen oder Kundennamen als Social Proof.",
     "",
-    "Der Nutzer darf den erkannten Einwandtyp niemals erfahren.",
-  ];
+    "Der Nutzer darf den erkannten Einwandtyp niemals erfahren."
+  );
 
   return lines.join("\n");
 }

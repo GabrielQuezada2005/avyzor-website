@@ -25,6 +25,10 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
       "Erst danach Alternativen: kleinerer Umfang, Einstieg ab 1.990 Euro netto, Ratenzahlung.",
       "Geschäftlichen Nutzen betonen, nicht den Preis rechtfertigen.",
     ],
+    benefitExamples: [
+      "Schlecht: Website kostet X. Gut: Professionelle Präsenz bringt dauerhaft Anfragen – oft decken wenige Neukunden die Investition.",
+      "Schlecht: Starter-Paket. Gut: Weniger Telefonzeit und Buchungen außerhalb der Öffnungszeiten.",
+    ],
     followUpQuestions: [
       "Was wäre Ihnen am wichtigsten – mehr Anfragen, weniger Aufwand oder bessere Sichtbarkeit?",
       "Sollen wir einen schlankeren Einstieg besprechen?",
@@ -135,8 +139,8 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
     label: "Gerade nicht benötigt",
     priority: 60,
     patterns: [
-      /brauche.*(gerade|aktuell|momentan).*nicht|gerade nicht|aktuell nicht/i,
-      /kein bedarf|nicht priorit|steht nicht an/i,
+      /brauche.*(gerade|aktuell|momentan|eigentlich|gar).*nicht|gerade nicht|aktuell nicht/i,
+      /kein bedarf|nicht priorit|steht nicht an|brauch.*(das|es).*nicht|unnötig|overkill/i,
     ],
     summaryTemplate: "Der Kunde sieht aktuell keinen Bedarf.",
     empathyExamples: [
@@ -145,7 +149,11 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
     ],
     explanationHints: [
       "Nicht überreden – Bedarf respektieren.",
-      "Kurz den langfristigen Nutzen erwähnen, ohne zu drängen.",
+      "Kurz den langfristigen Nutzen erwähnen: verlorene Anfragen, Wettbewerbsnachteil – ohne zu drängen.",
+      "Individuell auf Branche und Situation eingehen.",
+    ],
+    benefitExamples: [
+      "Schlecht: Sie brauchen eine Website. Gut: Mitbewerber werden online gefunden – ohne Präsenz gehen Anfragen regelmäßig verloren.",
     ],
     followUpQuestions: [
       "Gibt es einen Anlass, zu dem es relevant werden könnte?",
@@ -310,6 +318,41 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
     unresolvedFallback: [
       "Verschiebung akzeptieren – positiv beenden.",
       "Kontakt offen halten.",
+    ],
+  },
+  {
+    id: "no_time",
+    label: "Keine Zeit",
+    priority: 68,
+    patterns: [
+      /keine zeit|wenig zeit|zeit.*(mangel|fehlt)|zu beschäftigt|viel zu tun/i,
+      /habe.*(keine|wenig).*zeit|kein zeitfenster|stressig/i,
+      /gerade.*(stress|hektisch)|keine kapazität/i,
+    ],
+    summaryTemplate: "Der Kunde hat aktuell keine Zeit für das Projekt.",
+    empathyExamples: [
+      "Das verstehe ich – der Alltag als Unternehmer ist oft voll.",
+      "Zeit ist knapp – das kenne ich aus vielen Gesprächen.",
+    ],
+    explanationHints: [
+      "Zeitaufwand realistisch einordnen: AVYZOR übernimmt den Großteil – Kunde liefert Feedback.",
+      "Vorteil frühen Starts: Wettbewerbsvorteil, während andere noch warten.",
+      "Kein Druck – schrittweise Vorgehen oder späterer Start anbieten.",
+    ],
+    benefitExamples: [
+      "Schlecht: Projekt dauert 6 Wochen. Gut: Wenig eigene Zeit nötig – Umsetzung übernehmen wir, Sie profitieren danach von mehr Anfragen.",
+    ],
+    followUpQuestions: [
+      "Was würde Ihnen helfen, das Thema trotzdem anzugehen – z. B. schrittweise?",
+      "Gibt es einen ruhigeren Zeitraum, der für Sie besser passt?",
+    ],
+    nextStepOffers: [
+      "Kurzes Erstgespräch (30 Min.) ohne Vorbereitungsaufwand",
+      "Später unverbindlich weitersprechen",
+    ],
+    unresolvedFallback: [
+      "Zeitmangel respektieren – kein Druck.",
+      "Kontakt offen halten für später.",
     ],
   },
 ];
