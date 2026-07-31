@@ -114,10 +114,21 @@ export class CloudSpeechProvider implements TtsProvider {
   }
 
   private async requestTts(payload: TtsRequestPayload): Promise<Response> {
+    const body: Record<string, unknown> = {
+      text: payload.text,
+      lang: payload.lang,
+      provider: payload.provider,
+      speed: payload.speed,
+      stream: true,
+    };
+    if (payload.voiceUri) {
+      body.voiceUri = payload.voiceUri;
+    }
+
     return fetch("/api/assistant/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, stream: true }),
+      body: JSON.stringify(body),
     });
   }
 

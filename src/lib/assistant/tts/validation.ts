@@ -14,7 +14,7 @@ export const ttsRequestSchema = z.object({
     .max(4096, "Text ist zu lang für TTS (max. 4.096 Zeichen)."),
   lang: z.string().trim().min(2).max(12).optional(),
   provider: z.enum(["openai", "elevenlabs"]).optional(),
-  voiceUri: z.string().min(1).max(128).optional(),
+  voiceUri: z.string().min(1).max(128).nullish(),
   voice: z.string().min(1).max(64).optional(),
   speed: z.number().min(0.25).max(4).optional(),
   stream: z.boolean().optional(),
