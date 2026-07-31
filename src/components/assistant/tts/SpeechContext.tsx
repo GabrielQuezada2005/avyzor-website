@@ -4,7 +4,7 @@
  * Text-to-Speech – React Context
  *
  * Stellt globale Wiedergabe-Steuerung und Nutzer-Einstellungen bereit.
- * Bevorzugt OpenAI Premium-TTS, Fallback: Browser Speech Synthesis.
+ * Bevorzugt Cloud-TTS (OpenAI / ElevenLabs), Fallback: Browser Speech Synthesis.
  */
 
 import {
@@ -22,14 +22,15 @@ import {
   getTtsEngine,
   loadTtsPreferences,
   loadVoicesForLanguage,
-  OPENAI_TTS_VOICES,
-  probeOpenAiTtsAvailability,
+  probeCloudTtsAvailability,
   resetTtsPreferences,
   subscribeTtsPreferences,
+  toElevenLabsVoiceUri,
   toOpenAiVoiceUri,
   type SpeechPlaybackState,
   type TtsPreferences,
   type TtsProviderId,
+  type TtsStatusResponse,
 } from "@/lib/assistant/tts";
 
 export interface TtsVoiceOption {
@@ -56,6 +57,24 @@ const SpeechContext = createContext<SpeechContextValue | null>(null);
 
 interface SpeechProviderProps {
   children: ReactNode;
+}
+
+function mapCloudVoices(
+  status: TtsStatusResponse,
+  t: (key: string) => string
+): TtsVoiceOption[] {
+  const toUri =
+    status.activeProvider === "elevenlabs"
+      ? toElevenLabsVoiceUri
+      : toOpenAiVoiceUri;
+
+  return status.voices.map((voice) => ({
+    id: toUri(voice.id),
+    name:
+      status.activeProvider === "openai"
+        ? t(`settings.openaiVoices.${voice.id}`)
+        : t(`settings.elevenlabsVoices.${voice.label.toLowerCase()}`),
+  }));
 }
 
 export function SpeechProvider({ children }: SpeechProviderProps) {
@@ -95,20 +114,15 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
         "speechSynthesis" in window &&
         "SpeechSynthesisUtterance" in window;
 
-      const openAiOk = await probeOpenAiTtsAvailability();
+      const status = await probeCloudTtsAvailability();
       if (cancelled) return;
 
       const engine = getTtsEngine();
 
-      if (openAiOk) {
-        engine.setProvider("openai");
-        setActiveProviderId("openai");
-        setAvailableVoices(
-          OPENAI_TTS_VOICES.map((voice) => ({
-            id: toOpenAiVoiceUri(voice.id),
-            name: t(`settings.openaiVoices.${voice.id}`),
-          }))
-        );
+      if (status?.available) {
+        engine.setProvider(status.activeProvider);
+        setActiveProviderId(status.activeProvider);
+        setAvailableVoices(mapCloudVoices(status, t));
         setIsTtsSupported(true);
         return;
       }
@@ -146,14 +160,14 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
 
     let cancelled = false;
 
-    async function refreshVoices() {
+    const refreshVoices = async () => {
       const voices = await loadVoicesForLanguage(lang);
       if (!cancelled) {
         setAvailableVoices(
           voices.map((v) => ({ id: v.voiceURI, name: v.name }))
         );
       }
-    }
+    };
 
     void refreshVoices();
 

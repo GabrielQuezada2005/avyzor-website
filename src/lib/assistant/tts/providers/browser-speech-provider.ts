@@ -85,7 +85,9 @@ export class BrowserSpeechProvider implements TtsProvider {
     const settings = resolveSettings(options.settings);
     const voiceUri = settings.voiceUri;
     const browserVoiceUri =
-      voiceUri?.startsWith("openai:") ? null : voiceUri;
+      voiceUri?.startsWith("openai:") || voiceUri?.startsWith("elevenlabs:")
+        ? null
+        : voiceUri;
     const voice = resolveVoice(voices, lang, browserVoiceUri);
 
     const utterance = new SpeechSynthesisUtterance(text);

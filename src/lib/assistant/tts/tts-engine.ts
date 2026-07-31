@@ -6,7 +6,7 @@
  */
 
 import { getBrowserSpeechProvider } from "./providers/browser-speech-provider";
-import { getOpenAiSpeechProvider } from "./providers/openai-speech-provider";
+import { getCloudSpeechProvider } from "./providers/cloud-speech-provider";
 import {
   loadTtsPreferences,
   updateTtsPreferences,
@@ -87,13 +87,18 @@ export class TtsEngine {
   }
 
   private resolveProvider(preferred?: TtsProviderId): TtsProvider {
-    const openai = getOpenAiSpeechProvider();
+    const cloud = getCloudSpeechProvider();
     const browser = getBrowserSpeechProvider();
 
-    if (preferred === "openai" && openai.isSupported()) return openai;
+    if (
+      (preferred === "openai" || preferred === "elevenlabs") &&
+      cloud.isSupported()
+    ) {
+      return cloud;
+    }
     if (preferred === "browser" && browser.isSupported()) return browser;
 
-    if (openai.isSupported()) return openai;
+    if (cloud.isSupported()) return cloud;
     return browser;
   }
 }

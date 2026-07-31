@@ -58,9 +58,12 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
                 <h4 className="text-xs font-semibold text-gold-400 uppercase tracking-wider">
                   {t("settings.voiceSection")}
                 </h4>
-                {activeProviderId === "openai" && (
+                {(activeProviderId === "openai" ||
+                  activeProviderId === "elevenlabs") && (
                   <p className="text-[10px] text-white/35 mt-0.5">
-                    {t("settings.premiumProvider")}
+                    {activeProviderId === "elevenlabs"
+                      ? t("settings.premiumProviderElevenlabs")
+                      : t("settings.premiumProviderOpenai")}
                   </p>
                 )}
               </div>
@@ -124,9 +127,13 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
               step={0.05}
               displayValue={formatSliderValue(preferences.pitch)}
               onChange={(pitch) => updatePreferences({ pitch })}
-              disabled={activeProviderId === "openai"}
+              disabled={
+                activeProviderId === "openai" ||
+                activeProviderId === "elevenlabs"
+              }
               hint={
-                activeProviderId === "openai"
+                activeProviderId === "openai" ||
+                activeProviderId === "elevenlabs"
                   ? t("settings.pitchBrowserOnly")
                   : undefined
               }

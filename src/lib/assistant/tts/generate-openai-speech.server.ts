@@ -8,17 +8,10 @@ import {
 } from "@/lib/env.server";
 import { resolveOpenAiVoice, type OpenAiTtsVoiceId } from "./openai-voices";
 import { sanitizeTextForSpeech } from "./sanitize-for-speech";
+import { getTtsInstructionsForLang } from "./tts-instructions";
+import { TtsServiceError } from "./tts-service-error";
 
-export class TtsServiceError extends Error {
-  constructor(
-    message: string,
-    readonly code: string,
-    readonly status: number = 500
-  ) {
-    super(message);
-    this.name = "TtsServiceError";
-  }
-}
+export { TtsServiceError };
 
 let openaiClient: OpenAI | null = null;
 
@@ -46,69 +39,105 @@ export interface GenerateOpenAiSpeechOptions {
   speed?: number;
 }
 
-/**
- * Erzeugt MP3-Audio über OpenAI Text-to-Speech.
- * Modelle: tts-1 (schnell) | tts-1-hd (höchste Qualität)
- */
-export async function generateOpenAiSpeech(
-  options: GenerateOpenAiSpeechOptions
-): Promise<Buffer> {
+function buildSpeechParams(options: GenerateOpenAiSpeechOptions) {
   const input = sanitizeTextForSpeech(options.text);
   if (!input) {
     throw new TtsServiceError("Kein Text zum Vorlesen.", "EMPTY_TEXT", 400);
   }
 
+  const lang = options.lang ?? "de-DE";
   const voice =
-    options.voice ??
-    resolveOpenAiVoice(null, options.lang ?? "de-DE");
+    options.voice ?? resolveOpenAiVoice(null, lang);
+  const speed = clampSpeed(options.speed ?? 1.0);
+  const model = getOpenAITtsModel();
 
-  const speed = clampSpeed(options.speed ?? 1.15);
+  const params: OpenAI.Audio.SpeechCreateParams = {
+    model,
+    voice,
+    input,
+    speed,
+    response_format: "mp3",
+  };
 
+  if (model.includes("gpt-4o-mini-tts")) {
+    params.instructions = getTtsInstructionsForLang(lang);
+  }
+
+  return params;
+}
+
+function handleOpenAiError(error: unknown): never {
+  if (error instanceof TtsServiceError) throw error;
+
+  if (error instanceof APIError) {
+    console.error("[tts] OpenAI API error:", error.status, error.message);
+
+    if (error.status === 401) {
+      throw new TtsServiceError(
+        "OpenAI API-Schlüssel ungültig.",
+        "OPENAI_AUTH_ERROR",
+        503
+      );
+    }
+
+    if (error.status === 429) {
+      throw new TtsServiceError(
+        "TTS ist vorübergehend ausgelastet.",
+        "OPENAI_RATE_LIMIT",
+        429
+      );
+    }
+
+    throw new TtsServiceError(
+      `OpenAI TTS fehlgeschlagen (${error.status ?? "unknown"}).`,
+      "OPENAI_ERROR",
+      502
+    );
+  }
+
+  console.error("[tts] Unexpected OpenAI TTS error:", error);
+  throw new TtsServiceError(
+    "Unerwarteter Fehler bei der Sprachsynthese.",
+    "OPENAI_ERROR",
+    502
+  );
+}
+
+/**
+ * Erzeugt MP3-Audio über OpenAI Text-to-Speech.
+ * Standardmodell: gpt-4o-mini-tts (natürlich, emotional)
+ */
+export async function generateOpenAiSpeech(
+  options: GenerateOpenAiSpeechOptions
+): Promise<Buffer> {
   try {
-    const response = await getClient().audio.speech.create({
-      model: getOpenAITtsModel(),
-      voice,
-      input,
-      speed,
-      response_format: "mp3",
-    });
-
+    const params = buildSpeechParams(options);
+    const response = await getClient().audio.speech.create(params);
     return Buffer.from(await response.arrayBuffer());
   } catch (error) {
-    if (error instanceof TtsServiceError) throw error;
+    handleOpenAiError(error);
+  }
+}
 
-    if (error instanceof APIError) {
-      console.error("[tts] OpenAI API error:", error.status, error.message);
+/** Streamt MP3-Audio für niedrigere Latenz (Chunked Transfer). */
+export async function generateOpenAiSpeechStream(
+  options: GenerateOpenAiSpeechOptions
+): Promise<ReadableStream<Uint8Array>> {
+  try {
+    const params = buildSpeechParams(options);
+    const response = await getClient().audio.speech.create(params);
 
-      if (error.status === 401) {
-        throw new TtsServiceError(
-          "OpenAI API-Schlüssel ungültig.",
-          "OPENAI_AUTH_ERROR",
-          503
-        );
-      }
-
-      if (error.status === 429) {
-        throw new TtsServiceError(
-          "TTS ist vorübergehend ausgelastet.",
-          "OPENAI_RATE_LIMIT",
-          429
-        );
-      }
-
+    if (!response.body) {
       throw new TtsServiceError(
-        `OpenAI TTS fehlgeschlagen (${error.status ?? "unknown"}).`,
-        "OPENAI_ERROR",
+        "OpenAI lieferte keinen Audio-Stream.",
+        "OPENAI_NO_STREAM",
         502
       );
     }
 
-    console.error("[tts] Unexpected OpenAI TTS error:", error);
-    throw new TtsServiceError(
-      "Unerwarteter Fehler bei der Sprachsynthese.",
-      "OPENAI_ERROR",
-      502
-    );
+    return response.body;
+  } catch (error) {
+    handleOpenAiError(error);
   }
 }
 

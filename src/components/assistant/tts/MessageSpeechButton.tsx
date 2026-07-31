@@ -7,7 +7,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Volume2, Pause, Square } from "lucide-react";
+import { Volume2, Pause, Square, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useSpeech } from "./SpeechContext";
@@ -81,7 +81,15 @@ export function MessageSpeechButton({
             : "text-white/40 hover:text-gold-400 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/20"
         )}
       >
-        {isPlaying || isLoading ? (
+        {isLoading ? (
+          <motion.span
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 0.9, ease: "linear" }}
+            className="flex items-center justify-center"
+          >
+            <Loader2 size={14} aria-hidden="true" />
+          </motion.span>
+        ) : isPlaying ? (
           <motion.span
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}

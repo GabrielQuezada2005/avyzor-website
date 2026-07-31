@@ -9,7 +9,7 @@
 export type SpeechPlaybackState = "idle" | "loading" | "playing" | "paused";
 
 /** Unterstützte TTS-Anbieter. */
-export type TtsProviderId = "browser" | "openai";
+export type TtsProviderId = "browser" | "openai" | "elevenlabs";
 
 /** Optionen für eine einzelne Wiedergabe. */
 export interface SpeakOptions {

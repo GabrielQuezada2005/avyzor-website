@@ -13,7 +13,8 @@ export default {
     pitchLabel: "Tono",
     volumeLabel: "Volume",
     reset: "Reimposta",
-    premiumProvider: "Voce premium OpenAI",
+    premiumProviderOpenai: "Voce IA OpenAI (gpt-4o-mini-tts)",
+    premiumProviderElevenlabs: "Voce premium ElevenLabs",
     pitchBrowserOnly: "Il tono vale solo per le voci del browser",
     openaiVoices: {
       nova: "Nova – calda e naturale",
@@ -22,6 +23,13 @@ export default {
       echo: "Echo – maschile calma",
       fable: "Fable – espressiva",
       onyx: "Onyx – profonda",
+    },
+    elevenlabsVoices: {
+      sarah: "Sarah – chiara e naturale",
+      adam: "Adam – calmo ed equilibrato",
+      rachel: "Rachel – calda e amichevole",
+      daniel: "Daniel – tedesco, professionale",
+      charlotte: "Charlotte – elegante e naturale",
     },
   },
 };
