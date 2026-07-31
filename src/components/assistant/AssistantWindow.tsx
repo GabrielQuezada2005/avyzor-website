@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RotateCcw, Sparkles } from "lucide-react";
+import { X, RotateCcw, Sparkles, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ASSISTANT_QUICK_REPLY_IDS } from "@/lib/i18n/structures";
 import { AssistantMessage, AssistantTypingIndicator } from "./AssistantMessage";
 import { AssistantVoiceInput } from "./voice/AssistantVoiceInput";
+import { TtsSettingsPanel } from "./tts/TtsSettingsPanel";
 import type { ChatMessage, QuickReply } from "@/lib/assistant";
 
 interface AssistantWindowProps {
@@ -30,6 +31,7 @@ export function AssistantWindow({
 }: AssistantWindowProps) {
   const t = useTranslations("assistant");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const quickReplies = useMemo(
     () =>
@@ -104,6 +106,23 @@ export function AssistantWindow({
               <div className="flex items-center gap-1">
                 <button
                   type="button"
+                  onClick={() => setIsSettingsOpen((open) => !open)}
+                  aria-label={
+                    isSettingsOpen
+                      ? t("buttons.closeSettings")
+                      : t("buttons.openSettings")
+                  }
+                  aria-expanded={isSettingsOpen}
+                  className={`p-2 transition-colors rounded-lg hover:bg-white/5 ${
+                    isSettingsOpen
+                      ? "text-gold-400"
+                      : "text-white/40 hover:text-gold-400"
+                  }`}
+                >
+                  <Settings2 size={16} />
+                </button>
+                <button
+                  type="button"
                   onClick={onClear}
                   aria-label={t("buttons.reset")}
                   className="p-2 text-white/40 hover:text-gold-400 transition-colors rounded-lg hover:bg-white/5"
@@ -126,6 +145,8 @@ export function AssistantWindow({
                 {t("statusMessage")}
               </p>
             </div>
+
+            <TtsSettingsPanel isOpen={isSettingsOpen} />
 
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-[280px] max-h-[400px]">
               {messages.map((message, index) => (

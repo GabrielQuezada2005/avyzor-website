@@ -2,46 +2,36 @@
  * Text-to-Speech – Browser Speech Synthesis Provider
  *
  * Standard-Implementierung über die native Web Speech API.
+ * Nutzt gespeicherte Nutzer-Einstellungen (Stimme, Rate, Pitch, Volume).
  */
 
 import { detectLanguageFromText } from "../detect-language";
+import { loadVoices } from "../load-voices";
+import {
+  DEFAULT_TTS_PREFERENCES,
+  loadTtsPreferences,
+  type TtsPreferences,
+} from "../preferences";
 import { sanitizeTextForSpeech } from "../sanitize-for-speech";
-import { selectBestVoice } from "../select-voice";
+import { resolveVoice } from "../select-voice";
 import type {
   SpeakOptions,
   SpeechPlaybackState,
   SpeechStateListener,
   TtsProvider,
+  TtsVoiceSettings,
 } from "../types";
 
-/** Lädt verfügbare Stimmen (asynchron in manchen Browsern). */
-function loadVoices(): Promise<SpeechSynthesisVoice[]> {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) {
-      resolve([]);
-      return;
-    }
-
-    const synth = window.speechSynthesis;
-    const existing = synth.getVoices();
-    if (existing.length > 0) {
-      resolve(existing);
-      return;
-    }
-
-    const onVoicesChanged = () => {
-      synth.removeEventListener("voiceschanged", onVoicesChanged);
-      resolve(synth.getVoices());
-    };
-
-    synth.addEventListener("voiceschanged", onVoicesChanged);
-
-    // Fallback nach kurzer Wartezeit
-    setTimeout(() => {
-      synth.removeEventListener("voiceschanged", onVoicesChanged);
-      resolve(synth.getVoices());
-    }, 250);
-  });
+function resolveSettings(
+  override?: TtsVoiceSettings
+): TtsVoiceSettings {
+  const prefs = loadTtsPreferences();
+  return {
+    voiceUri: override?.voiceUri ?? prefs.voiceUri,
+    rate: override?.rate ?? prefs.rate,
+    pitch: override?.pitch ?? prefs.pitch,
+    volume: override?.volume ?? prefs.volume,
+  };
 }
 
 export class BrowserSpeechProvider implements TtsProvider {
@@ -90,16 +80,17 @@ export class BrowserSpeechProvider implements TtsProvider {
     const text = sanitizeTextForSpeech(options.text);
     if (!text) return;
 
-    const lang =
-      options.lang ?? detectLanguageFromText(text);
+    const lang = options.lang ?? detectLanguageFromText(text);
     const voices = await loadVoices();
-    const voice = selectBestVoice(voices, lang);
+    const settings = resolveSettings(options.settings);
+    const voice = resolveVoice(voices, lang, settings.voiceUri);
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     if (voice) utterance.voice = voice;
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    utterance.rate = settings.rate ?? DEFAULT_TTS_PREFERENCES.rate;
+    utterance.pitch = settings.pitch ?? DEFAULT_TTS_PREFERENCES.pitch;
+    utterance.volume = settings.volume ?? DEFAULT_TTS_PREFERENCES.volume;
 
     this.utterance = utterance;
     this.setState("loading", options.messageId);
@@ -154,3 +145,5 @@ export function getBrowserSpeechProvider(): BrowserSpeechProvider {
   }
   return browserInstance;
 }
+
+export type { TtsPreferences };

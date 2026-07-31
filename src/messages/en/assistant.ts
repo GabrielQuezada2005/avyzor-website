@@ -27,7 +27,9 @@ export default {
     "close": "Close chat",
     "reset": "Reset chat",
     "send": "Send message",
-    "tooltip": "AI advisor"
+    "tooltip": "AI advisor",
+    "openSettings": "Open settings",
+    "closeSettings": "Close settings"
   },
   "window": {
     "ariaLabel": "AVYZOR Assistant Chat",

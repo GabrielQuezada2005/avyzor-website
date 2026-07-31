@@ -17,6 +17,16 @@ export interface SpeakOptions {
   text: string;
   /** BCP-47 Sprachcode, z. B. de-DE – optional, wird sonst erkannt. */
   lang?: string;
+  /** Überschreibt gespeicherte Nutzer-Einstellungen für diese Wiedergabe. */
+  settings?: TtsVoiceSettings;
+}
+
+/** Stimme & Wiedergabe-Parameter (Browser Speech Synthesis). */
+export interface TtsVoiceSettings {
+  voiceUri: string | null;
+  rate: number;
+  pitch: number;
+  volume: number;
 }
 
 /** Callback bei Statusänderungen. */

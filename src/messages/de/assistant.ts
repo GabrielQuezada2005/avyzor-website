@@ -29,6 +29,8 @@ export default {
     reset: "Chat zurücksetzen",
     send: "Nachricht senden",
     tooltip: "KI-Berater",
+    openSettings: "Einstellungen öffnen",
+    closeSettings: "Einstellungen schließen",
   },
   window: {
     ariaLabel: "AVYZOR Assistant Chat",

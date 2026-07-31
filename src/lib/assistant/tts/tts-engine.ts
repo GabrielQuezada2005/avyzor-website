@@ -7,6 +7,11 @@
 
 import { getBrowserSpeechProvider } from "./providers/browser-speech-provider";
 import { getOpenAiSpeechProvider } from "./providers/openai-speech-provider";
+import {
+  loadTtsPreferences,
+  updateTtsPreferences,
+  type TtsPreferences,
+} from "./preferences";
 import type {
   SpeakOptions,
   SpeechPlaybackState,
@@ -14,6 +19,7 @@ import type {
   TtsEngineConfig,
   TtsProvider,
   TtsProviderId,
+  TtsVoiceSettings,
 } from "./types";
 
 export class TtsEngine {
@@ -62,6 +68,16 @@ export class TtsEngine {
 
   stop(): void {
     this.provider.stop();
+  }
+
+  /** Aktuelle TTS-Nutzer-Einstellungen. */
+  getPreferences(): TtsPreferences {
+    return loadTtsPreferences();
+  }
+
+  /** Aktualisiert TTS-Einstellungen (persistiert). */
+  setPreferences(partial: Partial<TtsVoiceSettings>): TtsPreferences {
+    return updateTtsPreferences(partial);
   }
 
   private bindProvider(provider: TtsProvider): void {
