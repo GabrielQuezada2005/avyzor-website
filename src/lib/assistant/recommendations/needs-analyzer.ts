@@ -109,7 +109,8 @@ function enrichFeaturesFromSignals(
  */
 export function analyzeCustomerNeeds(
   messages: ScoringMessage[],
-  signals: LeadSignals
+  signals: LeadSignals,
+  industryCategory?: string | null
 ): CustomerNeeds {
   const text = joinUserText(messages);
 
@@ -117,6 +118,8 @@ export function analyzeCustomerNeeds(
     goals: detectGoals(text),
     features: enrichFeaturesFromSignals(detectFeatures(text), signals),
     growthPotential: detectGrowthPotential(text, signals.companySize),
-    industry: detectRecommendationCategoryFromMessages(messages),
+    industry:
+      industryCategory ??
+      detectRecommendationCategoryFromMessages(messages),
   };
 }

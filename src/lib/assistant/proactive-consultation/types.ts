@@ -59,6 +59,7 @@ export interface ProactiveConsultationInput {
   messages: ScoringMessage[];
   briefing: ProjectBriefing;
   industryLabel?: string | null;
+  industryStatus?: "detected" | "uncertain" | "unknown";
 }
 
 export interface ProactiveConsultationPipelineResult {

@@ -87,7 +87,7 @@ export interface RecommendationInput {
   messages: ScoringMessage[];
   leadScoreResult: LeadScoreResult;
   briefing?: ProjectBriefing;
-  industryLabel?: string | null;
+  industryCategory?: string | null;
 }
 
 /** Modulares Paket-Profil für Matching. */

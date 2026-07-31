@@ -55,9 +55,14 @@ export {
 export function processRecommendations(
   input: RecommendationInput
 ): RecommendationPipelineResult {
-  const { sessionId, messages, leadScoreResult, briefing } = input;
+  const { sessionId, messages, leadScoreResult, briefing, industryCategory } =
+    input;
 
-  const needs = analyzeCustomerNeeds(messages, leadScoreResult.signals);
+  const needs = analyzeCustomerNeeds(
+    messages,
+    leadScoreResult.signals,
+    industryCategory
+  );
   const shouldRecommend = shouldGenerateRecommendation(
     leadScoreResult.messageCount,
     leadScoreResult.score,
@@ -127,7 +132,7 @@ export function processRecommendations(
   };
 
   const record = saveRecommendation(result);
-  const recommendationPrompt = buildRecommendationPrompt(result, briefing);
+  const recommendationPrompt = buildRecommendationPrompt(result);
 
   return { result, record, recommendationPrompt };
 }

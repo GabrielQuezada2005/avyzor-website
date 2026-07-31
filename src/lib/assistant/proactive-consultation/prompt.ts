@@ -82,7 +82,7 @@ export function buildProactiveConsultationPrompt(
     lines.push(
       `- Eine gezielte Frage für den nächsten Schritt – nur wenn sinnvoll: „${result.nextQuestion.naturalQuestion}"`,
       "- Frage in Empfehlung oder Anschlussfrage einweben – kein Formular-Stil.",
-      "- Maximal EINE offene Info-Lücke pro Antwort ansprechen."
+      "- Maximal EINE offene Info-Lücke pro Antwort (Branchenfrage übernimmt ggf. BRANCHENERKENNUNG)."
     );
   } else {
     lines.push(

@@ -60,7 +60,7 @@ function buildUnknownPrompt(result: IndustryRecognitionResult): string {
     "- Branche möglichst natürlich im Gespräch herausfinden – kein Formular-Stil.",
     `- Beispiel-Richtung (variieren): „${question}"`,
     "- Erst nach Branchenklärung branchenspezifische Lösungen empfehlen.",
-    "- Bis dahin: allgemein beraten, aber eine gezielte Anschlussfrage zur Branche stellen.",
+    "- Bis dahin: allgemein beraten. Branchenfrage übernimmt dieses Modul – PROAKTIVE BERATUNG stellt dann keine zweite Branchenfrage.",
     "- Branchenerkennung niemals dem Kunden mitteilen.",
   ].join("\n");
 }

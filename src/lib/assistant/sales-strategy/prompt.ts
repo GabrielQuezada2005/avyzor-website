@@ -80,7 +80,7 @@ export function buildSalesStrategyPrompt(result: SalesStrategyResult): string {
   if (result.hasActiveObjection) {
     lines.push(
       "",
-      "Hinweis: Aktiver Einwand erkannt – Einwandbehandlungs-Anweisungen haben Vorrang.",
+      "Hinweis: Aktiver Einwand erkannt – Einwandbehandlungs-Anweisungen haben Vorrang (siehe MODUL-PRIORITÄT).",
       "- Zuerst Verständnis, dann sachliche Einordnung, dann passende Lösung.",
       "- Keine Standardantwort – individuell auf den Kunden und Gesprächskontext eingehen."
     );

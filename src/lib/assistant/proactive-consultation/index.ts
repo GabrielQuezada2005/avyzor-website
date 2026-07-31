@@ -36,12 +36,17 @@ export { buildProactiveConsultationPrompt } from "./prompt";
 export function processProactiveConsultation(
   input: ProactiveConsultationInput
 ): ProactiveConsultationPipelineResult {
-  const { sessionId, messages, briefing, industryLabel } = input;
+  const { sessionId, messages, briefing, industryLabel, industryStatus } =
+    input;
 
   const messageCount = messages.filter((m) => m.role === "user").length;
   const opportunities = detectOpportunities(messages);
   const risks = detectRisks(messages, briefing, industryLabel);
-  const prioritizedGaps = prioritizeGaps(briefing, industryLabel);
+  const prioritizedGaps = prioritizeGaps(
+    briefing,
+    industryLabel,
+    industryStatus
+  );
   const nextQuestion = selectNextQuestion(prioritizedGaps, messageCount);
 
   const result: ProactiveConsultationResult = {

@@ -118,7 +118,8 @@ function isFieldFilled(briefing: ProjectBriefing, fieldId: string): boolean {
  */
 export function prioritizeGaps(
   briefing: ProjectBriefing,
-  industryLabel?: string | null
+  industryLabel?: string | null,
+  industryStatus?: "detected" | "uncertain" | "unknown"
 ): PrioritizedGap[] {
   const gaps: PrioritizedGap[] = [];
 
@@ -126,6 +127,12 @@ export function prioritizeGaps(
     const tier = FIELD_TIERS[field.id];
     if (!tier) continue;
     if (field.id === "industry" && industryLabel) continue;
+    if (
+      field.id === "industry" &&
+      (industryStatus === "unknown" || industryStatus === "uncertain")
+    ) {
+      continue;
+    }
     if (isFieldFilled(briefing, field.id)) continue;
 
     gaps.push({

@@ -54,7 +54,8 @@ export function buildPersonalityPrompt(
     "- Anpassungen subtil umsetzen – der Kunde soll den Unterschied spüren, nicht bemerken.",
     "- Profile oder Analyse niemals erwähnen.",
     "- Bei widersprüchlichen Profilen: primäres Profil hat Vorrang.",
-    "- Alle bisherigen Regeln (Beratung, Einwände, Preise) bleiben gültig.",
+    "- Bei Konflikt mit Anschlussfragen: max. eine Frage; hurried-Profil darf ohne Rückfrage antworten, wenn Empfehlung klar ist.",
+    "- MODUL-PRIORITÄT und System-Prompt haben Vorrang vor Tonfall-Anpassungen.",
   ];
 
   return lines.join("\n");

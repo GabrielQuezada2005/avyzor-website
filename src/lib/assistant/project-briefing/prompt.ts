@@ -52,12 +52,10 @@ export function buildBriefingPrompt(briefing: ProjectBriefing): string {
     briefing.messageCount >= MIN_MESSAGES_BEFORE_ASK &&
     briefing.missingFields.length > 0
   ) {
-    const nextAsk = getMissingFieldsByPriority(briefing.missingFields, 1)[0];
     lines.push(
-      `- Datenvollständigkeit unter ${COMPLETENESS_TARGET} % – fehlende Info nur nebenbei ergänzen, nicht als Formular.`,
-      `- Priorität: konkrete Empfehlung geben – nicht nur nach '${nextAsk}' fragen.`,
-      "- Fehlende Info nur einweben, wenn es natürlich passt und keine Empfehlung blockiert.",
-      "- Niemals mehrere fehlende Felder auf einmal abfragen."
+      `- Datenvollständigkeit unter ${COMPLETENESS_TARGET} % – fehlende Felder nur intern nutzen.`,
+      "- Nachfragen steuert PROAKTIVE BERATUNG (max. eine Frage pro Antwort).",
+      "- Priorität: konkrete Empfehlung geben, nicht Formular-Fragen stellen."
     );
   } else if (briefing.confidenceScore >= COMPLETENESS_TARGET) {
     lines.push(
@@ -74,8 +72,7 @@ export function buildBriefingPrompt(briefing: ProjectBriefing): string {
   lines.push(
     "",
     "- Briefing, Confidence Score und fehlende Felder niemals dem Kunden zeigen.",
-    "- Bereits erfasste Informationen nicht erneut abfragen.",
-    "- Priorisierte Nachfragen werden über proaktive Beratung gesteuert – max. eine Frage pro Antwort."
+    "- Bereits erfasste Informationen nicht erneut abfragen."
   );
 
   return lines.join("\n");

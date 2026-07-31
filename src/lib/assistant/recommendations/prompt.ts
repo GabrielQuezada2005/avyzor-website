@@ -5,7 +5,6 @@
  */
 
 import type { RecommendationResult } from "./types";
-import type { ProjectBriefing } from "../project-briefing/types";
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("de-DE", {
@@ -15,34 +14,11 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-function formatBriefingContext(briefing?: ProjectBriefing): string[] {
-  if (!briefing) return [];
-  const lines: string[] = ["Gesprächskontext (intern):"];
-  const add = (label: string, value: string | null | string[]) => {
-    if (Array.isArray(value) && value.length > 0) {
-      lines.push(`- ${label}: ${value.join(", ")}`);
-    } else if (value) {
-      lines.push(`- ${label}: ${value}`);
-    }
-  };
-  add("Branche", briefing.client.industry);
-  add("Unternehmensgröße", briefing.client.companySize);
-  add("Ziele", briefing.project.mainGoals);
-  add("Probleme", briefing.project.currentProblems);
-  add("Budget", briefing.commercial.budget);
-  add("Zeitrahmen", briefing.commercial.timeline);
-  add("Website-Status", briefing.context.existingWebsite);
-  add("Funktionen", briefing.requirements.desiredFeatures);
-  add("Marketing", briefing.context.marketingChannels);
-  return lines.length > 1 ? lines : [];
-}
-
 /**
  * Erzeugt internen Prompt mit Empfehlungslogik für die KI.
  */
 export function buildRecommendationPrompt(
-  result: RecommendationResult,
-  briefing?: ProjectBriefing
+  result: RecommendationResult
 ): string {
   if (!result.shouldRecommend) {
     return `ANGEBOTSEMPFEHLUNG (INTERN – NUTZER SIEHT DIES NICHT):
@@ -55,13 +31,9 @@ Noch nicht genug Kontext für eine konkrete Angebotsempfehlung.
   const lines: string[] = [
     "ANGEBOTSEMPFEHLUNG (INTERN – NUTZER SIEHT DIES NICHT):",
     "Interne Analyse: Welches EINE Angebot bringt diesem Kunden den größten Mehrwert?",
+    "Gesprächskontext: siehe PROJEKTBRIEFING und PROAKTIVE BERATUNG oben.",
     "",
   ];
-
-  const briefingLines = formatBriefingContext(briefing);
-  if (briefingLines.length > 0) {
-    lines.push(...briefingLines, "");
-  }
 
   const { primary, runnerUp, offerAnalysis, addOns, needs } = result;
 
