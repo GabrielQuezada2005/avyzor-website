@@ -17,11 +17,11 @@ export const OPENAI_VOICE_PREFIX = "openai:";
 
 /** Premium-Standard pro Sprache (BCP-47 Präfix). */
 export const DEFAULT_OPENAI_VOICE_BY_LANG: Record<string, OpenAiTtsVoiceId> = {
-  de: "nova",
+  de: "shimmer",
   en: "alloy",
   es: "shimmer",
   fr: "shimmer",
-  it: "nova",
+  it: "shimmer",
 };
 
 export function isOpenAiVoiceUri(voiceUri: string | null): boolean {
@@ -48,5 +48,5 @@ export function resolveOpenAiVoice(
   if (fromPref) return fromPref;
 
   const prefix = lang.split("-")[0].toLowerCase();
-  return DEFAULT_OPENAI_VOICE_BY_LANG[prefix] ?? "nova";
+  return DEFAULT_OPENAI_VOICE_BY_LANG[prefix] ?? "shimmer";
 }

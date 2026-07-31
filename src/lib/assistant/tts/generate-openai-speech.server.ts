@@ -39,6 +39,17 @@ export interface GenerateOpenAiSpeechOptions {
   speed?: number;
 }
 
+/** Natürliches Sprechtempo für gpt-4o-mini-tts (leicht unter 1.0 = ruhiger Berater-Ton). */
+const DEFAULT_OPENAI_TTS_SPEED = 0.97;
+
+function normalizeOpenAiSpeed(speed?: number): number {
+  if (speed === undefined) return DEFAULT_OPENAI_TTS_SPEED;
+  // Legacy-Nutzer mit rate 1.15 (alter Browser-Default) → ruhigeres OpenAI-Tempo
+  if (speed >= 1.12) return 0.97;
+  if (speed >= 1.05) return 0.99;
+  return clampSpeed(speed);
+}
+
 function buildSpeechParams(options: GenerateOpenAiSpeechOptions) {
   const input = sanitizeTextForSpeech(options.text);
   if (!input) {
@@ -48,7 +59,7 @@ function buildSpeechParams(options: GenerateOpenAiSpeechOptions) {
   const lang = options.lang ?? "de-DE";
   const voice =
     options.voice ?? resolveOpenAiVoice(null, lang);
-  const speed = clampSpeed(options.speed ?? 1.0);
+  const speed = normalizeOpenAiSpeed(options.speed);
   const model = getOpenAITtsModel();
 
   const params: OpenAI.Audio.SpeechCreateParams = {

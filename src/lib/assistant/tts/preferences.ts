@@ -15,7 +15,7 @@ export interface TtsPreferences {
   volume: number;
 }
 
-export const DEFAULT_TTS_RATE = 1.15;
+export const DEFAULT_TTS_RATE = 1.0;
 
 export const DEFAULT_TTS_PREFERENCES: TtsPreferences = {
   voiceUri: null,

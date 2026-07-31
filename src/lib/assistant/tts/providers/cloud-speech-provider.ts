@@ -1,8 +1,8 @@
 /**
- * Text-to-Speech – Cloud Provider (OpenAI & ElevenLabs)
+ * Text-to-Speech – Cloud Provider (ElevenLabs & OpenAI)
  *
  * Premium-Sprachausgabe über /api/assistant/tts mit Streaming-Wiedergabe.
- * Fallback auf Browser-Speech bei Fehlern – ohne Fehlermeldung für Nutzer.
+ * Fallback: ElevenLabs → OpenAI → Browser (still, ohne Nutzer-Fehlermeldung).
  */
 
 import { getBrowserSpeechProvider } from "./browser-speech-provider";
@@ -26,19 +26,37 @@ export interface TtsStatusVoice {
   label: string;
 }
 
+export interface TtsProviderStatus {
+  available: boolean;
+  model: string | null;
+}
+
 export interface TtsStatusResponse {
   available: boolean;
   activeProvider: "openai" | "elevenlabs" | "browser";
   provider: "openai" | "elevenlabs" | "browser";
+  fallbackProvider: "openai" | "elevenlabs" | "browser" | null;
   model: string | null;
   defaultVoice: string | null;
   voices: TtsStatusVoice[];
   defaultVoiceByLang: Record<string, string>;
   streaming: boolean;
+  providers?: {
+    openai: TtsProviderStatus;
+    elevenlabs: TtsProviderStatus;
+  };
+}
+
+interface TtsRequestPayload {
+  text: string;
+  lang: string;
+  provider: "openai" | "elevenlabs";
+  voiceUri: string | null;
+  speed: number;
 }
 
 export class CloudSpeechProvider implements TtsProvider {
-  private _id: TtsProviderId = "openai";
+  private _id: TtsProviderId = "elevenlabs";
 
   get id(): TtsProviderId {
     return this._id;
@@ -95,42 +113,20 @@ export class CloudSpeechProvider implements TtsProvider {
     this.audioHandle = null;
   }
 
-  async speak(options: SpeakOptions): Promise<void> {
-    if (typeof window === "undefined") return;
+  private async requestTts(payload: TtsRequestPayload): Promise<Response> {
+    return fetch("/api/assistant/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, stream: true }),
+    });
+  }
 
-    this.stop();
-
-    const text = sanitizeTextForSpeech(options.text);
-    if (!text) return;
-
-    const prefs = loadTtsPreferences();
-    const lang = options.lang ?? "de-DE";
-    const voiceUri = options.settings?.voiceUri ?? prefs.voiceUri;
-    const speed = options.settings?.rate ?? prefs.rate;
-    const volume = options.settings?.volume ?? prefs.volume;
-    const provider = this.status?.activeProvider ?? "openai";
-
-    this.setState("loading", options.messageId);
-
+  private async playResponse(
+    response: Response,
+    options: SpeakOptions,
+    volume: number
+  ): Promise<boolean> {
     try {
-      const response = await fetch("/api/assistant/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text,
-          lang,
-          provider,
-          voiceUri,
-          speed,
-          stream: true,
-        }),
-      });
-
-      if (!response.ok) {
-        await this.fallbackToBrowser(options);
-        return;
-      }
-
       const handle = await playStreamingAudioResponse(
         response,
         volume,
@@ -150,6 +146,60 @@ export class CloudSpeechProvider implements TtsProvider {
           this.setState("idle", null);
         }
       };
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async speak(options: SpeakOptions): Promise<void> {
+    if (typeof window === "undefined") return;
+
+    this.stop();
+
+    const text = sanitizeTextForSpeech(options.text);
+    if (!text) return;
+
+    const prefs = loadTtsPreferences();
+    const lang = options.lang ?? "de-DE";
+    const voiceUri = options.settings?.voiceUri ?? prefs.voiceUri;
+    const speed = options.settings?.rate ?? prefs.rate;
+    const volume = options.settings?.volume ?? prefs.volume;
+
+    const primary = this.status?.activeProvider ?? "elevenlabs";
+    const payload: TtsRequestPayload = {
+      text,
+      lang,
+      provider: primary === "openai" ? "openai" : "elevenlabs",
+      voiceUri,
+      speed,
+    };
+
+    this.setState("loading", options.messageId);
+
+    try {
+      let response = await this.requestTts(payload);
+
+      if (
+        !response.ok &&
+        payload.provider === "elevenlabs" &&
+        this.status?.providers?.openai.available
+      ) {
+        response = await this.requestTts({ ...payload, provider: "openai" });
+        if (response.ok) {
+          this._id = "openai";
+        }
+      }
+
+      if (!response.ok) {
+        await this.fallbackToBrowser(options);
+        return;
+      }
+
+      const played = await this.playResponse(response, options, volume);
+      if (!played) {
+        await this.fallbackToBrowser(options);
+      }
     } catch {
       await this.fallbackToBrowser(options);
     }
@@ -204,6 +254,7 @@ export async function probeCloudTtsAvailability(): Promise<TtsStatusResponse | n
       available: false,
       activeProvider: "browser",
       provider: "browser",
+      fallbackProvider: null,
       model: null,
       defaultVoice: null,
       voices: [],

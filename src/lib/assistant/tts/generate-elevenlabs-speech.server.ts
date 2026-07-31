@@ -23,6 +23,16 @@ export interface GenerateElevenLabsSpeechOptions {
 
 const ELEVENLABS_API = "https://api.elevenlabs.io/v1";
 
+/** Natürliches Sprechtempo für Premium-Beratertone. */
+const DEFAULT_ELEVENLABS_SPEED = 0.96;
+
+function normalizeElevenLabsSpeed(speed?: number): number {
+  if (speed === undefined) return DEFAULT_ELEVENLABS_SPEED;
+  if (speed >= 1.12) return 0.96;
+  if (speed >= 1.05) return 0.98;
+  return clampElevenLabsSpeed(speed);
+}
+
 function buildRequestBody(
   text: string,
   speed: number
@@ -31,17 +41,17 @@ function buildRequestBody(
     text,
     model_id: getElevenLabsModelId(),
     voice_settings: {
-      stability: 0.5,
-      similarity_boost: 0.75,
-      style: 0.35,
+      stability: 0.42,
+      similarity_boost: 0.85,
+      style: 0.28,
       use_speaker_boost: true,
     },
-    speed: clampElevenLabsSpeed(speed),
+    speed: normalizeElevenLabsSpeed(speed),
   };
 }
 
 function clampElevenLabsSpeed(speed: number): number {
-  return Math.min(1.2, Math.max(0.7, speed));
+  return Math.min(1.1, Math.max(0.85, speed));
 }
 
 function resolveVoiceAndText(
@@ -98,7 +108,7 @@ export async function generateElevenLabsSpeech(
   options: GenerateElevenLabsSpeechOptions
 ): Promise<Buffer> {
   const { voiceId, text } = resolveVoiceAndText(options);
-  const speed = options.speed ?? 1.0;
+  const speed = options.speed ?? DEFAULT_ELEVENLABS_SPEED;
 
   const response = await fetch(
     `${ELEVENLABS_API}/text-to-speech/${voiceId}`,
@@ -126,10 +136,10 @@ export async function generateElevenLabsSpeechStream(
   options: GenerateElevenLabsSpeechOptions
 ): Promise<ReadableStream<Uint8Array>> {
   const { voiceId, text } = resolveVoiceAndText(options);
-  const speed = options.speed ?? 1.0;
+  const speed = options.speed ?? DEFAULT_ELEVENLABS_SPEED;
 
   const response = await fetch(
-    `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream`,
+    `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream?optimize_streaming_latency=3`,
     {
       method: "POST",
       headers: {

@@ -1,14 +1,14 @@
 /**
  * ElevenLabs Text-to-Speech – Stimmen & Sprach-Mapping
  *
- * Multilingual v2 Stimmen – natürliche Aussprache für DE/EN/ES/FR/IT.
+ * Multilingual v2 – Daniel ist die natürlichste deutsche Premium-Stimme.
  */
 
 export const ELEVENLABS_TTS_VOICES = [
+  { id: "onwK4e9ZLuTAKqWW03F9", label: "Daniel" },
   { id: "EXAVITQu4vr4xnSDxMaL", label: "Sarah" },
   { id: "pNInz6obpgDQGcFmaJgB", label: "Adam" },
   { id: "21m00Tcm4TlvDq8ikWAM", label: "Rachel" },
-  { id: "onwK4e9ZLuTAKqWW03F9", label: "Daniel" },
   { id: "XB0fDUnXU5powFXDhCwa", label: "Charlotte" },
 ] as const;
 

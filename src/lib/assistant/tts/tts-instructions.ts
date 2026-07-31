@@ -4,15 +4,15 @@
  */
 
 const INSTRUCTIONS_BY_LANG: Record<string, string> = {
-  de: "Sprich natürlich und flüssig auf Deutsch mit menschlicher Betonung, angemessenen Pausen und warmem, professionellem Ton.",
-  en: "Speak naturally and fluently in English with human-like intonation, appropriate pauses, and a warm professional tone.",
-  es: "Habla de forma natural y fluida en español con entonación humana, pausas adecuadas y un tono cálido y profesional.",
-  fr: "Parle naturellement et fluidement en français avec une intonation humaine, des pauses appropriées et un ton chaleureux et professionnel.",
-  it: "Parla in modo naturale e fluente in italiano con intonazione umana, pause appropriate e un tono caldo e professionale.",
+  de: "Sprich wie ein professioneller deutscher Unternehmensberater. Natürlich, ruhig, freundlich, selbstbewusst und flüssig. Vermeide roboterhafte Betonung und unnatürliche Pausen.",
+  en: "Speak like a professional business consultant. Natural, calm, friendly, confident and fluent. Avoid robotic intonation and unnatural pauses.",
+  es: "Habla como un consultor empresarial profesional. Natural, calmado, amable, seguro y fluido. Evita entonación robótica y pausas innaturales.",
+  fr: "Parle comme un consultant d'entreprise professionnel. Naturel, calme, amical, confiant et fluide. Évite l'intonation robotique et les pauses non naturelles.",
+  it: "Parla come un consulente aziendale professionista. Naturale, calmo, amichevole, sicuro e fluente. Evita intonazione robotica e pause innaturali.",
 };
 
 const DEFAULT_INSTRUCTIONS =
-  "Speak naturally and fluently with human-like intonation, appropriate pauses, and a warm professional tone.";
+  "Speak like a professional business consultant. Natural, calm, friendly, confident and fluent. Avoid robotic intonation and unnatural pauses.";
 
 export function getTtsInstructionsForLang(lang: string): string {
   const prefix = lang.split("-")[0].toLowerCase();

@@ -25,6 +25,7 @@ import {
   isElevenLabsTtsConfigured,
   isOpenAITtsConfigured,
   resolveActiveTtsProvider,
+  resolveTtsFallbackProvider,
 } from "@/lib/env.server";
 
 export const runtime = "nodejs";
@@ -56,6 +57,12 @@ export async function GET() {
     available,
     activeProvider: activeProvider ?? "browser",
     provider: activeProvider ?? "browser",
+    fallbackProvider:
+      activeProvider === "elevenlabs"
+        ? resolveTtsFallbackProvider("elevenlabs")
+        : activeProvider === "openai"
+          ? resolveTtsFallbackProvider("openai")
+          : null,
     model: available ? active.model : null,
     defaultVoice: available ? active.defaultVoice : null,
     voices: available ? active.voices : [],
@@ -121,14 +128,32 @@ export async function POST(request: NextRequest) {
 
     const resolvedProvider = provider ?? activeProvider;
 
-    const audio = await generateTtsAudio({
-      provider: resolvedProvider,
-      text,
-      lang,
-      voiceUri: resolvedVoiceUri,
-      speed,
-      stream: stream ?? true,
-    });
+    let usedProvider = resolvedProvider;
+    let audio: Buffer | ReadableStream<Uint8Array>;
+
+    try {
+      audio = await generateTtsAudio({
+        provider: resolvedProvider,
+        text,
+        lang,
+        voiceUri: resolvedVoiceUri,
+        speed,
+        stream: stream ?? true,
+      });
+    } catch (primaryError) {
+      const fallback = resolveTtsFallbackProvider(resolvedProvider);
+      if (!fallback) throw primaryError;
+
+      usedProvider = fallback;
+      audio = await generateTtsAudio({
+        provider: fallback,
+        text,
+        lang,
+        voiceUri: resolvedVoiceUri,
+        speed,
+        stream: stream ?? true,
+      });
+    }
 
     if (audio instanceof ReadableStream) {
       return new NextResponse(audio, {
@@ -137,7 +162,7 @@ export async function POST(request: NextRequest) {
           "Content-Type": "audio/mpeg",
           "Cache-Control": "no-cache",
           "Transfer-Encoding": "chunked",
-          "X-TTS-Provider": resolvedProvider,
+          "X-TTS-Provider": usedProvider,
         },
       });
     }
@@ -147,7 +172,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "private, max-age=3600",
-        "X-TTS-Provider": resolvedProvider,
+        "X-TTS-Provider": usedProvider,
       },
     });
   } catch (error) {

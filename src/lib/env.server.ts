@@ -3,6 +3,7 @@ import "server-only";
 const PLACEHOLDER_PATTERNS = [
   "your_api_key",
   "your-openai-api-key",
+  "your-elevenlabs",
   "sk-your",
   "changeme",
   "replace_me",
@@ -40,21 +41,21 @@ export function getOpenAITtsModel(): string {
   return readEnv("OPENAI_TTS_MODEL") || "gpt-4o-mini-tts";
 }
 
-/** Standard-Stimme für OpenAI TTS (nova = natürlich, gut für Deutsch). */
+/** Standard-Stimme für OpenAI TTS (shimmer = klar, professionell, gut für Deutsch). */
 export function getOpenAITtsVoice(): string {
-  return readEnv("OPENAI_TTS_VOICE") || "nova";
+  return readEnv("OPENAI_TTS_VOICE") || "shimmer";
 }
 
 export function isOpenAITtsConfigured(): boolean {
   return isOpenAIConfigured();
 }
 
-/** Bevorzugter Cloud-TTS-Anbieter: openai (Standard) | elevenlabs */
+/** Bevorzugter Cloud-TTS-Anbieter: elevenlabs (Standard) | openai (Fallback) */
 export type TtsCloudProvider = "openai" | "elevenlabs";
 
 export function getTtsProvider(): TtsCloudProvider {
   const value = readEnv("TTS_PROVIDER").toLowerCase();
-  return value === "elevenlabs" ? "elevenlabs" : "openai";
+  return value === "openai" ? "openai" : "elevenlabs";
 }
 
 // ── ElevenLabs TTS ──────────────────────────────────────────────────────────
@@ -75,17 +76,27 @@ export function isElevenLabsTtsConfigured(): boolean {
   return !isPlaceholder(getElevenLabsApiKey());
 }
 
-/** Aktiver Cloud-Anbieter – bevorzugter Provider, falls konfiguriert. */
+/** Aktiver Cloud-Anbieter – ElevenLabs bevorzugt, OpenAI als Fallback. */
 export function resolveActiveTtsProvider(): TtsCloudProvider | null {
   const preferred = getTtsProvider();
-  if (preferred === "elevenlabs" && isElevenLabsTtsConfigured()) {
-    return "elevenlabs";
+
+  if (preferred === "elevenlabs") {
+    if (isElevenLabsTtsConfigured()) return "elevenlabs";
+    if (isOpenAITtsConfigured()) return "openai";
+    return null;
   }
-  if (preferred === "openai" && isOpenAITtsConfigured()) {
-    return "openai";
-  }
+
   if (isOpenAITtsConfigured()) return "openai";
   if (isElevenLabsTtsConfigured()) return "elevenlabs";
+  return null;
+}
+
+/** Sekundärer Cloud-Fallback (ElevenLabs → OpenAI). */
+export function resolveTtsFallbackProvider(
+  primary: TtsCloudProvider
+): TtsCloudProvider | null {
+  if (primary === "elevenlabs" && isOpenAITtsConfigured()) return "openai";
+  if (primary === "openai" && isElevenLabsTtsConfigured()) return "elevenlabs";
   return null;
 }
 
