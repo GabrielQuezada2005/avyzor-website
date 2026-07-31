@@ -4,7 +4,7 @@ export const ASSISTANT_CONFIG: AssistantConfig = {
   name: "AVYZOR Assistant",
   tagline: "Ihr Premium-Berater",
   welcomeMessage:
-    "Schön, dass Sie da sind. Ich berate Sie gerne zu Leistungen, Preisen und Projektabläufen. Was ist Ihr Anliegen?",
+    "Schön, dass Sie da sind. Erzählen Sie mir gern, wobei ich Ihnen helfen kann – ich höre zu und berate Sie persönlich.",
   placeholder: "Ihre Nachricht eingeben…",
   statusMessage: "Premium KI-Beratung · Antworten in Echtzeit",
   quickReplies: [
