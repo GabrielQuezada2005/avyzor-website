@@ -109,7 +109,7 @@ export function AssistantWindow({
 
             <div className="px-5 py-2 bg-gold-500/5 border-b border-gold-500/10">
               <p className="text-[11px] text-gold-400/70 text-center">
-                Demo-Modus · Platzhalter-Antworten · KI-Integration folgt
+                {ASSISTANT_CONFIG.statusMessage}
               </p>
             </div>
 

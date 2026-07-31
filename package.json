@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rm -rf .next"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -14,6 +15,7 @@
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.474.0",
     "next": "14.2.35",
+    "openai": "^7.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "resend": "^4.1.2",

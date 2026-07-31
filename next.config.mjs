@@ -27,6 +27,9 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ["openai"],
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

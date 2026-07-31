@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import {
-  ASSISTANT_CONFIG,
+  AssistantApiError,
   createMessageId,
   createWelcomeMessage,
   generateAssistantResponse,
@@ -18,6 +18,9 @@ export function useAssistant(): UseAssistantReturn {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isProcessingRef = useRef(false);
+  const messagesRef = useRef(messages);
+
+  messagesRef.current = messages;
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
@@ -43,14 +46,16 @@ export function useAssistant(): UseAssistantReturn {
       status: "sent",
     };
 
+    const conversationHistory = [...messagesRef.current, userMessage];
+
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
     try {
-      const response = await generateAssistantResponse(trimmed, [
-        ...messages,
-        userMessage,
-      ]);
+      const response = await generateAssistantResponse(
+        trimmed,
+        conversationHistory
+      );
 
       const assistantMessage: ChatMessage = {
         id: createMessageId(),
@@ -61,21 +66,30 @@ export function useAssistant(): UseAssistantReturn {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch {
-      setError(ASSISTANT_CONFIG.offlineMessage);
-      const errorMessage: ChatMessage = {
+    } catch (err) {
+      const errorMessage =
+        err instanceof AssistantApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Unbekannter Fehler beim Senden der Nachricht.";
+
+      setError(errorMessage);
+
+      const assistantErrorMessage: ChatMessage = {
         id: createMessageId(),
         role: "assistant",
-        content: ASSISTANT_CONFIG.offlineMessage,
+        content: errorMessage,
         timestamp: new Date(),
         status: "error",
       };
-      setMessages((prev) => [...prev, errorMessage]);
+
+      setMessages((prev) => [...prev, assistantErrorMessage]);
     } finally {
       setIsTyping(false);
       isProcessingRef.current = false;
     }
-  }, [messages]);
+  }, []);
 
   return {
     isOpen,

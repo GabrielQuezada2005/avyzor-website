@@ -16,21 +16,13 @@ export interface QuickReply {
   message: string;
 }
 
-export interface AssistantIntent {
-  id: string;
-  keywords: string[];
-  response: string;
-}
-
 export interface AssistantConfig {
   name: string;
   tagline: string;
   welcomeMessage: string;
   placeholder: string;
-  offlineMessage: string;
+  statusMessage: string;
   quickReplies: QuickReply[];
-  intents: AssistantIntent[];
-  fallbackResponses: string[];
 }
 
 export interface AssistantState {

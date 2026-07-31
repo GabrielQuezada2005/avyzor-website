@@ -1,0 +1,36 @@
+import "server-only";
+
+const PLACEHOLDER_PATTERNS = [
+  "your_api_key",
+  "your-openai-api-key",
+  "sk-your",
+  "changeme",
+  "replace_me",
+];
+
+function readEnv(name: string): string {
+  return (process.env[name] ?? "").trim();
+}
+
+function isPlaceholder(value: string): boolean {
+  if (!value) return true;
+  const lower = value.toLowerCase();
+  return PLACEHOLDER_PATTERNS.some((pattern) => lower.includes(pattern));
+}
+
+export function getOpenAIApiKey(): string {
+  return readEnv("OPENAI_API_KEY");
+}
+
+export function getOpenAIModel(): string {
+  return readEnv("OPENAI_MODEL") || "gpt-4o-mini";
+}
+
+export function getOpenAIMaxTokens(): number {
+  const parsed = Number(readEnv("OPENAI_MAX_TOKENS") || "800");
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 800;
+}
+
+export function isOpenAIConfigured(): boolean {
+  return !isPlaceholder(getOpenAIApiKey());
+}

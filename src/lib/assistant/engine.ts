@@ -1,82 +1,67 @@
 import { ASSISTANT_CONFIG } from "./config";
-import type { AssistantIntent, ChatMessage } from "./types";
+import { AssistantApiError } from "./errors";
+import type { ChatMessage } from "./types";
 
-const TYPING_DELAY_MIN_MS = 600;
-const TYPING_DELAY_MAX_MS = 1400;
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+interface AssistantApiResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  code?: string;
 }
 
-function randomTypingDelay(): number {
-  return (
-    TYPING_DELAY_MIN_MS +
-    Math.random() * (TYPING_DELAY_MAX_MS - TYPING_DELAY_MIN_MS)
-  );
-}
-
-function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/ä/g, "ae")
-    .replace(/ö/g, "oe")
-    .replace(/ü/g, "ue")
-    .replace(/ß/g, "ss");
-}
-
-function matchIntent(
-  userMessage: string,
-  intents: AssistantIntent[]
-): AssistantIntent | null {
-  const normalized = normalizeText(userMessage);
-
-  let bestMatch: AssistantIntent | null = null;
-  let bestScore = 0;
-
-  for (const intent of intents) {
-    let score = 0;
-    for (const keyword of intent.keywords) {
-      if (normalized.includes(normalizeText(keyword))) {
-        score += keyword.split(" ").length;
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = intent;
-    }
-  }
-
-  return bestScore > 0 ? bestMatch : null;
-}
-
-function pickFallbackResponse(): string {
-  const { fallbackResponses } = ASSISTANT_CONFIG;
-  const index = Math.floor(Math.random() * fallbackResponses.length);
-  return fallbackResponses[index];
-}
-
-export interface GenerateResponseOptions {
-  simulateTyping?: boolean;
+function toApiMessages(
+  history: ChatMessage[]
+): Array<{ role: "user" | "assistant"; content: string }> {
+  return history
+    .filter(
+      (message) =>
+        (message.role === "user" || message.role === "assistant") &&
+        message.status !== "error"
+    )
+    .map((message) => ({
+      role: message.role as "user" | "assistant",
+      content: message.content,
+    }));
 }
 
 /**
- * Rule-based response engine – placeholder for future AI integration.
- * No external API calls, no API keys required.
+ * Sends the session conversation history to the server-side OpenAI route.
+ * The API key never leaves the server.
  */
 export async function generateAssistantResponse(
-  userMessage: string,
-  _history: ChatMessage[],
-  options: GenerateResponseOptions = {}
+  _userMessage: string,
+  history: ChatMessage[]
 ): Promise<string> {
-  const { simulateTyping = true } = options;
+  const messages = toApiMessages(history);
 
-  if (simulateTyping) {
-    await delay(randomTypingDelay());
+  if (messages.length === 0) {
+    throw new AssistantApiError("Keine Nachricht zum Senden vorhanden.");
   }
 
-  const intent = matchIntent(userMessage, ASSISTANT_CONFIG.intents);
-  return intent ? intent.response : pickFallbackResponse();
+  const response = await fetch("/api/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+
+  let data: AssistantApiResponse;
+
+  try {
+    data = (await response.json()) as AssistantApiResponse;
+  } catch {
+    throw new AssistantApiError(
+      `Assistant-API antwortete nicht korrekt (HTTP ${response.status}).`
+    );
+  }
+
+  if (!response.ok || !data.success || !data.message) {
+    throw new AssistantApiError(
+      data.error ?? `Assistant-API-Fehler (HTTP ${response.status}).`,
+      data.code
+    );
+  }
+
+  return data.message;
 }
 
 export function createMessageId(): string {

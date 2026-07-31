@@ -1,4 +1,5 @@
 export { ASSISTANT_CONFIG } from "./config";
+export { AssistantApiError } from "./errors";
 export {
   createMessageId,
   createWelcomeMessage,
@@ -7,7 +8,6 @@ export {
 export type {
   AssistantActions,
   AssistantConfig,
-  AssistantIntent,
   AssistantState,
   ChatMessage,
   MessageRole,
