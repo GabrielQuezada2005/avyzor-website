@@ -22,9 +22,9 @@ export function buildRecommendationPrompt(result: RecommendationResult): string 
   if (!result.shouldRecommend) {
     return `EMPFEHLUNGS-SYSTEM (INTERN – NUTZER SIEHT DIES NICHT):
 Noch nicht genug Kontext für eine Paketempfehlung.
-- Weiter beraten und Rückfragen stellen.
-- Keine Pakete oder Preise nennen, es sei denn der Kunde fragt explizit danach.
-- Vertrauen aufbauen, Bedürfnisse verstehen.`;
+- Kurz beraten (80–180 Wörter, kurze Absätze).
+- Eine gezielte Anschlussfrage stellen, um Kontext zu gewinnen.
+- Keine Pakete oder Preise nennen, es sei denn der Kunde fragt explizit danach.`;
   }
 
   const { primary, addOns, needs } = result;
@@ -41,7 +41,8 @@ Noch nicht genug Kontext für eine Paketempfehlung.
       "",
       "Anweisung an dich:",
       "- Empfehle eine individuelle Lösung – erkläre WARUM kein Standardpaket optimal passt.",
-      "- Keine Standardantwort – beziehe dich auf die konkreten Anforderungen des Kunden.",
+      "- Kurze Absätze (max. 2–3 Sätze), 80–180 Wörter.",
+      "- Nach der Empfehlung: eine konkrete Anschlussfrage.",
       "- Biete ein unverbindliches Erstgespräch an, um den Umfang gemeinsam zu definieren."
     );
   } else {
@@ -51,10 +52,11 @@ Noch nicht genug Kontext für eine Paketempfehlung.
       `Gründe: ${primary.reasons.join("; ")}`,
       "",
       "Anweisung an dich:",
-      `- Wenn du ein Paket empfiehlst, erkläre IMMER WARUM – z. B.: "Auf Grundlage Ihrer Anforderungen würde ich Ihnen das ${primary.packageName}-Paket empfehlen, da …"`,
+      `- Wenn du ein Paket empfiehlst, erkläre WARUM – z. B.: "Auf Grundlage Ihrer Anforderungen würde ich Ihnen das ${primary.packageName}-Paket empfehlen, da …"`,
+      "- Kurze Absätze (max. 2–3 Sätze), 80–180 Wörter.",
+      "- Nach der Empfehlung: eine konkrete Anschlussfrage zur Priorisierung oder Vertiefung.",
       "- Nenne niemals ein Paket ohne Begründung.",
-      "- Beziehe die Begründung auf die genannten Ziele und Funktionen des Kunden.",
-      "- Beratend auftreten, nicht verkäuferisch."
+      "- Bereits Genanntes nicht wiederholen."
     );
   }
 
