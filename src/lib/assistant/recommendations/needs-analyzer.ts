@@ -4,6 +4,7 @@
  * Extrahiert Ziele, Features und Wachstumspotenzial aus dem Gespräch.
  */
 
+import { detectRecommendationCategoryFromMessages } from "../industry-recognition";
 import type { LeadSignals, ScoringMessage } from "../lead-scoring/types";
 import type { CustomerNeeds, DetectedFeature, GrowthPotential } from "./types";
 
@@ -44,19 +45,6 @@ const GOAL_PATTERNS: Array<{ pattern: RegExp; goal: string }> = [
   { pattern: /wachsen|skalier|expand|filialen|standorte/i, goal: "Unternehmen skalieren" },
 ];
 
-const INDUSTRY_KEYWORDS: Record<string, RegExp[]> = {
-  handwerk: [/handwerk|elektriker|installateur|sanitär|maler/i],
-  friseur: [/friseur|salon|kosmetik/i],
-  immobilien: [/immobilien|makler|wohnung/i],
-  medtech: [/medtech|medizin|arzt|praxis|klinik/i],
-  fintech: [/fintech|finanz|versicherung/i],
-  gastro: [/restaurant|hotel|gastro|café/i],
-  fitness: [/fitness|studio|trainer/i],
-  beratung: [/beratung|consulting|coach/i],
-  agentur: [/agentur|marketing/i],
-  ecommerce: [/shop|e-commerce|online.?handel/i],
-};
-
 function detectFeatures(text: string): DetectedFeature[] {
   const detected: DetectedFeature[] = [];
   for (const [feature, patterns] of Object.entries(FEATURE_PATTERNS)) {
@@ -75,13 +63,6 @@ function detectGoals(text: string): string[] {
     }
   }
   return goals;
-}
-
-function detectIndustry(text: string): string | null {
-  for (const [industry, patterns] of Object.entries(INDUSTRY_KEYWORDS)) {
-    if (containsAny(text, patterns)) return industry;
-  }
-  return null;
 }
 
 function detectGrowthPotential(
@@ -136,6 +117,6 @@ export function analyzeCustomerNeeds(
     goals: detectGoals(text),
     features: enrichFeaturesFromSignals(detectFeatures(text), signals),
     growthPotential: detectGrowthPotential(text, signals.companySize),
-    industry: detectIndustry(text),
+    industry: detectRecommendationCategoryFromMessages(messages),
   };
 }

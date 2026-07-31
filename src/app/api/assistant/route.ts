@@ -5,6 +5,7 @@ import {
   rateLimitResponse,
 } from "@/lib/api/security";
 import { AssistantServiceError } from "@/lib/assistant/errors";
+import { processIndustryRecognition } from "@/lib/assistant/industry-recognition";
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
 import { processObjectionHandling } from "@/lib/assistant/objection-handling";
 import { processPersonalityAnalysis } from "@/lib/assistant/personality-analysis";
@@ -98,6 +99,9 @@ export async function POST(request: NextRequest) {
         messages
       );
 
+      const { industryPrompt, result: industryResult } =
+        processIndustryRecognition({ sessionId, messages });
+
       const { recommendationPrompt, result: recommendationResult } =
         processRecommendations({
           sessionId,
@@ -117,6 +121,7 @@ export async function POST(request: NextRequest) {
 
       leadBehaviorPrompt = [
         behaviorPrompt,
+        industryPrompt,
         recommendationPrompt,
         objectionPrompt,
         personalityPrompt,
@@ -128,6 +133,9 @@ export async function POST(request: NextRequest) {
       // Internes Logging – interne Analysen werden nie an den Client zurückgegeben.
       console.info(
         `[lead-scoring] session=${sessionId} score=${scoreResult.score} category=${scoreResult.category}`
+      );
+      console.info(
+        `[industry-recognition] session=${sessionId} status=${industryResult.status} industry=${industryResult.primary?.label ?? "unknown"}`
       );
       console.info(
         `[recommendations] session=${sessionId} package=${recommendationResult.primary.packageName} fit=${recommendationResult.primary.fitScore} addons=${recommendationResult.addOns.map((a) => a.name).join(",") || "none"}`
