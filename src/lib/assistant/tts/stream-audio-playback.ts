@@ -9,6 +9,9 @@ export interface StreamAudioHandle {
   objectUrl: string;
 }
 
+/** Mindestpuffer vor Start – verhindert Underruns, kein Chunk-zu-Chunk-Delay. */
+const PREBUFFER_BYTES = 6_144;
+
 export async function playStreamingAudioResponse(
   response: Response,
   volume: number,
@@ -58,6 +61,7 @@ async function playWithMediaSource(
   const objectUrl = URL.createObjectURL(mediaSource);
   const audio = new Audio(objectUrl);
   audio.volume = volume;
+  audio.preload = "auto";
 
   const sourceOpen = new Promise<void>((resolve, reject) => {
     mediaSource.addEventListener(
@@ -83,6 +87,16 @@ async function playWithMediaSource(
   return { audio, objectUrl };
 }
 
+function concatChunks(chunks: Uint8Array[], totalLength: number): Uint8Array {
+  const merged = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return merged;
+}
+
 async function appendStreamToMediaSource(
   mediaSource: MediaSource,
   body: ReadableStream<Uint8Array>,
@@ -90,8 +104,14 @@ async function appendStreamToMediaSource(
   onPlaying: () => void
 ): Promise<void> {
   const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+  if (sourceBuffer.mode !== "sequence") {
+    sourceBuffer.mode = "sequence";
+  }
+
   const reader = body.getReader();
   let started = false;
+  let pendingChunks: Uint8Array[] = [];
+  let pendingBytes = 0;
 
   const waitForUpdate = (): Promise<void> =>
     sourceBuffer.updating
@@ -102,18 +122,36 @@ async function appendStreamToMediaSource(
         )
       : Promise.resolve();
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (!value?.length) continue;
+  const flushPending = async (): Promise<void> => {
+    if (pendingBytes === 0) return;
+
+    const merged = concatChunks(pendingChunks, pendingBytes);
+    pendingChunks = [];
+    pendingBytes = 0;
 
     await waitForUpdate();
-    sourceBuffer.appendBuffer(new Uint8Array(value));
+    sourceBuffer.appendBuffer(new Uint8Array(merged));
 
     if (!started) {
       started = true;
       audio.onplay = onPlaying;
       await audio.play();
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      await flushPending();
+      break;
+    }
+    if (!value?.length) continue;
+
+    pendingChunks.push(value);
+    pendingBytes += value.length;
+
+    if (started || pendingBytes >= PREBUFFER_BYTES) {
+      await flushPending();
     }
   }
 

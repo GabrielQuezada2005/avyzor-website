@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/ensure-dev-cache.mjs && next dev",
-    "build": "next build",
+    "build": "node scripts/ensure-dev-cache.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next"

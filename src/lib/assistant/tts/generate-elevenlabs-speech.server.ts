@@ -23,14 +23,15 @@ export interface GenerateElevenLabsSpeechOptions {
 
 const ELEVENLABS_API = "https://api.elevenlabs.io/v1";
 
-/** Natürliches Sprechtempo für Premium-Beratertone. */
-const DEFAULT_ELEVENLABS_SPEED = 0.96;
+/** Flüssiges Sprechtempo (~1.07× bei UI-Standard 1.0). */
+const FLUENT_ELEVENLABS_SPEED = 1.07;
+const UI_RATE_BASELINE = 1.0;
 
 function normalizeElevenLabsSpeed(speed?: number): number {
-  if (speed === undefined) return DEFAULT_ELEVENLABS_SPEED;
-  if (speed >= 1.12) return 0.96;
-  if (speed >= 1.05) return 0.98;
-  return clampElevenLabsSpeed(speed);
+  const uiRate = speed ?? UI_RATE_BASELINE;
+  return clampElevenLabsSpeed(
+    FLUENT_ELEVENLABS_SPEED * (uiRate / UI_RATE_BASELINE)
+  );
 }
 
 function buildRequestBody(
@@ -41,9 +42,9 @@ function buildRequestBody(
     text,
     model_id: getElevenLabsModelId(),
     voice_settings: {
-      stability: 0.42,
+      stability: 0.52,
       similarity_boost: 0.85,
-      style: 0.28,
+      style: 0.12,
       use_speaker_boost: true,
     },
     speed: normalizeElevenLabsSpeed(speed),
@@ -51,7 +52,7 @@ function buildRequestBody(
 }
 
 function clampElevenLabsSpeed(speed: number): number {
-  return Math.min(1.1, Math.max(0.85, speed));
+  return Math.min(1.12, Math.max(0.85, speed));
 }
 
 function resolveVoiceAndText(
@@ -108,7 +109,7 @@ export async function generateElevenLabsSpeech(
   options: GenerateElevenLabsSpeechOptions
 ): Promise<Buffer> {
   const { voiceId, text } = resolveVoiceAndText(options);
-  const speed = options.speed ?? DEFAULT_ELEVENLABS_SPEED;
+  const speed = options.speed ?? UI_RATE_BASELINE;
 
   const response = await fetch(
     `${ELEVENLABS_API}/text-to-speech/${voiceId}`,
@@ -136,10 +137,10 @@ export async function generateElevenLabsSpeechStream(
   options: GenerateElevenLabsSpeechOptions
 ): Promise<ReadableStream<Uint8Array>> {
   const { voiceId, text } = resolveVoiceAndText(options);
-  const speed = options.speed ?? DEFAULT_ELEVENLABS_SPEED;
+  const speed = options.speed ?? UI_RATE_BASELINE;
 
   const response = await fetch(
-    `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream?optimize_streaming_latency=3`,
+    `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream?optimize_streaming_latency=4`,
     {
       method: "POST",
       headers: {
