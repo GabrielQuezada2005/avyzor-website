@@ -74,7 +74,8 @@ export function buildBriefingPrompt(briefing: ProjectBriefing): string {
   lines.push(
     "",
     "- Briefing, Confidence Score und fehlende Felder niemals dem Kunden zeigen.",
-    "- Bereits erfasste Informationen nicht erneut abfragen."
+    "- Bereits erfasste Informationen nicht erneut abfragen.",
+    "- Priorisierte Nachfragen werden über proaktive Beratung gesteuert – max. eine Frage pro Antwort."
   );
 
   return lines.join("\n");

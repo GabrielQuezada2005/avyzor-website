@@ -65,6 +65,7 @@ export function mapFieldsToBriefing(
       mainGoals: getList("mainGoals"),
       currentProblems: getList("currentProblems"),
       targetAudience: get("targetAudience"),
+      businessFocus: get("businessFocus"),
     },
     requirements: {
       desiredFeatures: getList("desiredFeatures"),
@@ -74,6 +75,10 @@ export function mapFieldsToBriefing(
       colorPreferences: get("colorPreferences"),
       hasLogo: get("hasLogo"),
       hasDomain: get("hasDomain"),
+      hasCorporateDesign: get("hasCorporateDesign"),
+      hasContent: get("hasContent"),
+      hasCrm: get("hasCrm"),
+      hasAppointmentBooking: get("hasAppointmentBooking"),
     },
     commercial: {
       budget: get("budget"),

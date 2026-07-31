@@ -9,6 +9,7 @@ import { processIndustryRecognition } from "@/lib/assistant/industry-recognition
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
 import { processObjectionHandling } from "@/lib/assistant/objection-handling";
 import { processPersonalityAnalysis } from "@/lib/assistant/personality-analysis";
+import { processProactiveConsultation } from "@/lib/assistant/proactive-consultation";
 import { processProjectBriefing } from "@/lib/assistant/project-briefing";
 import { processRecommendations } from "@/lib/assistant/recommendations";
 import { processSalesStrategy } from "@/lib/assistant/sales-strategy";
@@ -127,6 +128,14 @@ export async function POST(request: NextRequest) {
         { sessionId, messages }
       );
 
+      const { proactivePrompt, result: proactiveResult } =
+        processProactiveConsultation({
+          sessionId,
+          messages,
+          briefing: briefingResult,
+          industryLabel: industryResult.primary?.label ?? null,
+        });
+
       leadBehaviorPrompt = [
         behaviorPrompt,
         industryPrompt,
@@ -135,6 +144,7 @@ export async function POST(request: NextRequest) {
         objectionPrompt,
         personalityPrompt,
         briefingPrompt,
+        proactivePrompt,
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -161,6 +171,9 @@ export async function POST(request: NextRequest) {
       }
       console.info(
         `[project-briefing] session=${sessionId} confidence=${briefingResult.confidenceScore}% missing=${briefingResult.missingFields.length}`
+      );
+      console.info(
+        `[proactive-consultation] session=${sessionId} opportunities=${proactiveResult.opportunities.length} risks=${proactiveResult.risks.length} nextQuestion=${proactiveResult.nextQuestion?.fieldId ?? "none"}`
       );
     }
 

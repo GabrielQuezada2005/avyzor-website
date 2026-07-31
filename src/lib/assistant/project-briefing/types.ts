@@ -49,6 +49,7 @@ export interface ProjectSection {
   mainGoals: string[];
   currentProblems: string[];
   targetAudience: string | null;
+  businessFocus: string | null;
 }
 
 export interface RequirementsSection {
@@ -59,6 +60,10 @@ export interface RequirementsSection {
   colorPreferences: string | null;
   hasLogo: string | null;
   hasDomain: string | null;
+  hasCorporateDesign: string | null;
+  hasContent: string | null;
+  hasCrm: string | null;
+  hasAppointmentBooking: string | null;
 }
 
 export interface CommercialSection {

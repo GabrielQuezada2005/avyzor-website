@@ -119,13 +119,27 @@ export const BRIEFING_FIELD_CATALOG: BriefingFieldDefinition[] = [
     askPriority: 95,
     extract: (text) => {
       const goals: string[] = [];
-      if (/mehr kunden|kundengewinnung/i.test(text)) goals.push("Mehr Kunden gewinnen");
+      if (/mehr kunden|kundengewinnung|mehr anfragen/i.test(text))
+        goals.push("Mehr Kunden gewinnen");
       if (/sichtbarkeit|google|seo/i.test(text)) goals.push("Bessere Sichtbarkeit");
       if (/umsatz|verkauf/i.test(text)) goals.push("Umsatz steigern");
       if (/terminbuchung|termine/i.test(text)) goals.push("Terminbuchung automatisieren");
       if (/professional|image|vertrauen/i.test(text)) goals.push("Professionelleres Image");
       if (/automatisier/i.test(text)) goals.push("Prozesse automatisieren");
       return goals.length > 0 ? goals.join("; ") : null;
+    },
+  },
+  {
+    id: "businessFocus",
+    label: "Geschäftsfokus (Anfragen/Verkäufe)",
+    category: "project",
+    weight: 7,
+    askPriority: 93,
+    extract: (text) => {
+      if (/mehr anfragen|kundengewinnung|leads/i.test(text)) return "Mehr Anfragen";
+      if (/verkauf|umsatz|shop|online.?handel/i.test(text)) return "Mehr Verkäufe";
+      if (/anfragen.*und.*verkauf|beides/i.test(text)) return "Anfragen und Verkäufe";
+      return null;
     },
   },
   {
@@ -224,6 +238,65 @@ export const BRIEFING_FIELD_CATALOG: BriefingFieldDefinition[] = [
     extract: (text) => {
       if (/logo.*(haben|vorhanden|ja)/i.test(text)) return "Ja, vorhanden";
       if (/kein logo|logo.*(fehlt|nein|brauchen)/i.test(text)) return "Nein / wird benötigt";
+      return null;
+    },
+  },
+  {
+    id: "hasCorporateDesign",
+    label: "Corporate Design",
+    category: "requirements",
+    weight: 3,
+    askPriority: 38,
+    extract: (text) => {
+      if (/corporate design|ci\b|cd\b|markenauftritt|designrichtlin/i.test(text)) {
+        if (/haben|vorhanden|ja/i.test(text)) return "Ja, vorhanden";
+        if (/kein|fehlt|nein|brauchen/i.test(text)) return "Nein / wird benötigt";
+        return "Erwähnt";
+      }
+      return null;
+    },
+  },
+  {
+    id: "hasContent",
+    label: "Texte und Bilder",
+    category: "requirements",
+    weight: 4,
+    askPriority: 44,
+    extract: (text) => {
+      if (/texte.*(haben|vorhanden|liegen)|bilder.*(haben|vorhanden)|fotos.*(haben|vorhanden)/i.test(text))
+        return "Ja, vorhanden";
+      if (/keine texte|texte.*(fehlen|brauchen)|bilder.*(fehlen|brauchen)|content.*(fehlt|brauchen)/i.test(text))
+        return "Nein / wird benötigt";
+      return null;
+    },
+  },
+  {
+    id: "hasCrm",
+    label: "CRM vorhanden",
+    category: "requirements",
+    weight: 4,
+    askPriority: 46,
+    extract: (text) => {
+      if (/crm|hubspot|salesforce|pipedrive/i.test(text)) {
+        if (/haben|nutzen|vorhanden|ja/i.test(text)) return "Ja, vorhanden";
+        if (/kein|fehlt|nein|brauchen|suchen/i.test(text)) return "Nein / wird benötigt";
+        return "Erwähnt";
+      }
+      return null;
+    },
+  },
+  {
+    id: "hasAppointmentBooking",
+    label: "Terminbuchung vorhanden",
+    category: "requirements",
+    weight: 5,
+    askPriority: 72,
+    extract: (text) => {
+      if (/terminbuchung|online.?termin|calendly|buchungssystem/i.test(text)) {
+        if (/haben|nutzen|vorhanden|schon|bereits/i.test(text)) return "Ja, vorhanden";
+        if (/kein|fehlt|nein|brauchen|wünschen|möchten/i.test(text)) return "Nein / gewünscht";
+        return "Erwähnt";
+      }
       return null;
     },
   },
