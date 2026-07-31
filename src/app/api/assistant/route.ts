@@ -8,6 +8,7 @@ import { AssistantServiceError } from "@/lib/assistant/errors";
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
 import { processObjectionHandling } from "@/lib/assistant/objection-handling";
 import { processPersonalityAnalysis } from "@/lib/assistant/personality-analysis";
+import { processProjectBriefing } from "@/lib/assistant/project-briefing";
 import { processRecommendations } from "@/lib/assistant/recommendations";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
@@ -110,11 +111,16 @@ export async function POST(request: NextRequest) {
       const { personalityPrompt, result: personalityResult } =
         processPersonalityAnalysis({ sessionId, messages });
 
+      const { briefingPrompt, result: briefingResult } = processProjectBriefing(
+        { sessionId, messages }
+      );
+
       leadBehaviorPrompt = [
         behaviorPrompt,
         recommendationPrompt,
         objectionPrompt,
         personalityPrompt,
+        briefingPrompt,
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -136,6 +142,9 @@ export async function POST(request: NextRequest) {
           `[personality-analysis] session=${sessionId} profiles=${personalityResult.profiles.map((p) => p.type).join(",")}`
         );
       }
+      console.info(
+        `[project-briefing] session=${sessionId} confidence=${briefingResult.confidenceScore}% missing=${briefingResult.missingFields.length}`
+      );
     }
 
     const message = await generateOpenAIResponse(messages, {
