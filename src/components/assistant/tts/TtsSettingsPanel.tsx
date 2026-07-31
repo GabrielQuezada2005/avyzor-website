@@ -26,6 +26,7 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
   const locale = useLocale() as Locale;
   const {
     isTtsSupported,
+    activeProviderId,
     preferences,
     availableVoices,
     updatePreferences,
@@ -53,9 +54,16 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
         >
           <div className="mx-4 mb-2 p-3 rounded-xl bg-dark-700/50 border border-gold-500/15 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-gold-400 uppercase tracking-wider">
-                {t("settings.voiceSection")}
-              </h4>
+              <div>
+                <h4 className="text-xs font-semibold text-gold-400 uppercase tracking-wider">
+                  {t("settings.voiceSection")}
+                </h4>
+                {activeProviderId === "openai" && (
+                  <p className="text-[10px] text-white/35 mt-0.5">
+                    {t("settings.premiumProvider")}
+                  </p>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={resetPreferences}
@@ -88,7 +96,7 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
               >
                 <option value="">{t("settings.voiceAuto")}</option>
                 {availableVoices.map((voice) => (
-                  <option key={voice.voiceURI} value={voice.voiceURI}>
+                  <option key={voice.id} value={voice.id}>
                     {voice.name}
                   </option>
                 ))}
@@ -116,6 +124,12 @@ export function TtsSettingsPanel({ isOpen }: TtsSettingsPanelProps) {
               step={0.05}
               displayValue={formatSliderValue(preferences.pitch)}
               onChange={(pitch) => updatePreferences({ pitch })}
+              disabled={activeProviderId === "openai"}
+              hint={
+                activeProviderId === "openai"
+                  ? t("settings.pitchBrowserOnly")
+                  : undefined
+              }
             />
 
             <SliderControl
@@ -144,6 +158,8 @@ interface SliderControlProps {
   step: number;
   displayValue: string;
   onChange: (value: number) => void;
+  disabled?: boolean;
+  hint?: string;
 }
 
 function SliderControl({
@@ -155,11 +171,19 @@ function SliderControl({
   step,
   displayValue,
   onChange,
+  disabled = false,
+  hint,
 }: SliderControlProps) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-[11px] text-white/50">
+        <label
+          htmlFor={id}
+          className={cn(
+            "text-[11px]",
+            disabled ? "text-white/25" : "text-white/50"
+          )}
+        >
           {label}
         </label>
         <span className="text-[10px] text-gold-400/80 tabular-nums">
@@ -173,6 +197,7 @@ function SliderControl({
         max={max}
         step={step}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-valuemin={min}
         aria-valuemax={max}
@@ -180,11 +205,13 @@ function SliderControl({
         className={cn(
           "w-full h-1.5 rounded-full appearance-none cursor-pointer",
           "bg-dark-600 accent-gold-400",
+          disabled && "opacity-40 cursor-not-allowed",
           "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5",
           "[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400",
           "[&::-webkit-slider-thumb]:shadow-gold [&::-webkit-slider-thumb]:border-0"
         )}
       />
+      {hint && <p className="text-[10px] text-white/30">{hint}</p>}
     </div>
   );
 }

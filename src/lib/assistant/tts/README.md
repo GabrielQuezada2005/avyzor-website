@@ -2,46 +2,52 @@
 
 ## Übersicht
 
-Browser Speech Synthesis als Standard-Provider mit Premium-Stimmenauswahl und Nutzer-Einstellungen.
+**OpenAI Text-to-Speech** als Premium-Standard (natürliche KI-Stimmen, niedrige Latenz).  
+**Browser Speech Synthesis** als stiller Fallback, wenn kein API-Key gesetzt ist oder die API ausfällt.
 
-## Stimmenqualität
+## Premium-Stimmen (OpenAI)
 
-`select-voice.ts` bewertet verfügbare Stimmen per Score:
+| Stimme   | Charakter              | DE-Empfehlung |
+|----------|------------------------|---------------|
+| **nova** | warm, natürlich        | ✓ Standard DE |
+| shimmer  | klar, freundlich       |               |
+| alloy    | neutral, ausgewogen    | EN-Standard   |
+| echo     | männlich, ruhig        |               |
+| fable    | erzählerisch           |               |
+| onyx     | tief, souverän         |               |
 
-- **Sprach-Match** (höchste Priorität)
-- **Apple Enhanced/Premium** auf macOS (Anna, Markus, …)
-- **Neural/Natural**-Stimmen (Google, Microsoft)
-- **localService** (System-Stimmen statt Cloud)
-- Abwertung: Compact, Novelty, eSpeak
+Modelle: `tts-1-hd` (Qualität, Standard) · `tts-1` (schneller)
 
-Standard: automatisch beste Stimme (`voiceUri: null`).
+## Architektur
 
-## Standard-Wiedergabe
+```
+MessageSpeechButton → SpeechContext → TtsEngine
+  → OpenAiSpeechProvider (Primär)
+      → POST /api/assistant/tts → OpenAI audio.speech.create()
+      → HTMLAudioElement-Wiedergabe
+  → BrowserSpeechProvider (Fallback bei Fehler / ohne Key)
+```
 
-| Parameter | Standard |
-|-----------|----------|
-| Rate      | **1.15** (natürlicher als 1.0) |
-| Pitch     | 1.0      |
-| Volume    | 1.0      |
+## Konfiguration (.env.local)
+
+| Variable           | Beschreibung                          | Standard    |
+|--------------------|---------------------------------------|-------------|
+| `OPENAI_API_KEY`   | Pflicht (gleicher Key wie Chat)       | –           |
+| `OPENAI_TTS_MODEL` | `tts-1-hd` oder `tts-1`               | `tts-1-hd`  |
+| `OPENAI_TTS_VOICE` | Standard-Stimme                       | `nova`      |
 
 ## Nutzer-Einstellungen
 
 Persistiert in `localStorage` (`avyzor-assistant-tts-prefs`):
 
 - Stimme (Auto oder manuell)
-- Geschwindigkeit (0.5 – 2.0)
-- Tonhöhe (0 – 2)
+- Geschwindigkeit (0.5 – 2.0, Standard **1.15**)
+- Tonhöhe (nur Browser-Fallback)
 - Lautstärke (0 – 1)
 
 UI: Chatbot → Zahnrad → Bereich **Stimme**
 
-## Architektur
+## Browser-Fallback
 
-```
-TtsSettingsPanel → SpeechContext → TtsEngine → BrowserSpeechProvider
-                                        ↓
-                              preferences.ts (localStorage)
-                              select-voice.ts (Qualitäts-Score)
-```
-
-OpenAI TTS bleibt als optionaler Provider vorbereitet (`openai-speech-provider.ts`).
+`select-voice.ts` bewertet System-Stimmen per Score (Apple Enhanced, Neural, localService).  
+Wird nur genutzt, wenn OpenAI TTS nicht verfügbar ist.

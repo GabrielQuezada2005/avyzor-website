@@ -13,5 +13,15 @@ export default {
     pitchLabel: "Tonhöhe",
     volumeLabel: "Lautstärke",
     reset: "Zurücksetzen",
+    premiumProvider: "OpenAI Premium-Stimme",
+    pitchBrowserOnly: "Tonhöhe gilt nur für Browser-Stimmen",
+    openaiVoices: {
+      nova: "Nova – warm & natürlich (DE empfohlen)",
+      shimmer: "Shimmer – klar & freundlich",
+      alloy: "Alloy – neutral & ausgewogen",
+      echo: "Echo – männlich & ruhig",
+      fable: "Fable – erzählerisch",
+      onyx: "Onyx – tief & souverän",
+    },
   },
 };

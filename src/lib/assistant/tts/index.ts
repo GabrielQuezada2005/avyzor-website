@@ -22,7 +22,14 @@ export {
 } from "./preferences";
 export { getTtsEngine, TtsEngine } from "./tts-engine";
 export { getBrowserSpeechProvider } from "./providers/browser-speech-provider";
-export { getOpenAiSpeechProvider } from "./providers/openai-speech-provider";
+export {
+  OPENAI_TTS_VOICES,
+  DEFAULT_OPENAI_VOICE_BY_LANG,
+  resolveOpenAiVoice,
+  toOpenAiVoiceUri,
+  isOpenAiVoiceUri,
+} from "./openai-voices";
+export { probeOpenAiTtsAvailability } from "./providers/openai-speech-provider";
 export type {
   SpeakOptions,
   SpeechPlaybackState,

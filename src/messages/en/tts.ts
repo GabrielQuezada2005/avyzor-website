@@ -13,5 +13,15 @@ export default {
     pitchLabel: "Pitch",
     volumeLabel: "Volume",
     reset: "Reset",
+    premiumProvider: "OpenAI premium voice",
+    pitchBrowserOnly: "Pitch applies to browser voices only",
+    openaiVoices: {
+      nova: "Nova – warm & natural",
+      shimmer: "Shimmer – clear & friendly",
+      alloy: "Alloy – neutral & balanced",
+      echo: "Echo – calm male",
+      fable: "Fable – expressive",
+      onyx: "Onyx – deep & confident",
+    },
   },
 };

@@ -4,7 +4,7 @@
  * Text-to-Speech – React Context
  *
  * Stellt globale Wiedergabe-Steuerung und Nutzer-Einstellungen bereit.
- * Nur eine Nachricht kann gleichzeitig vorgelesen werden.
+ * Bevorzugt OpenAI Premium-TTS, Fallback: Browser Speech Synthesis.
  */
 
 import {
@@ -16,24 +16,34 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { localeToBcp47, type Locale } from "@/i18n/routing";
 import {
   getTtsEngine,
   loadTtsPreferences,
   loadVoicesForLanguage,
+  OPENAI_TTS_VOICES,
+  probeOpenAiTtsAvailability,
   resetTtsPreferences,
   subscribeTtsPreferences,
+  toOpenAiVoiceUri,
   type SpeechPlaybackState,
   type TtsPreferences,
+  type TtsProviderId,
 } from "@/lib/assistant/tts";
+
+export interface TtsVoiceOption {
+  id: string;
+  name: string;
+}
 
 interface SpeechContextValue {
   activeMessageId: string | null;
   playbackState: SpeechPlaybackState;
   isTtsSupported: boolean;
+  activeProviderId: TtsProviderId;
   preferences: TtsPreferences;
-  availableVoices: SpeechSynthesisVoice[];
+  availableVoices: TtsVoiceOption[];
   playMessage: (messageId: string, text: string, lang?: string) => void;
   pause: () => void;
   resume: () => void;
@@ -50,45 +60,99 @@ interface SpeechProviderProps {
 
 export function SpeechProvider({ children }: SpeechProviderProps) {
   const locale = useLocale() as Locale;
+  const t = useTranslations("tts");
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [playbackState, setPlaybackState] =
     useState<SpeechPlaybackState>("idle");
   const [preferences, setPreferences] = useState<TtsPreferences>(
     loadTtsPreferences
   );
-  const [availableVoices, setAvailableVoices] = useState<
-    SpeechSynthesisVoice[]
-  >([]);
+  const [availableVoices, setAvailableVoices] = useState<TtsVoiceOption[]>(
+    []
+  );
   const [isTtsSupported, setIsTtsSupported] = useState(false);
+  const [activeProviderId, setActiveProviderId] =
+    useState<TtsProviderId>("browser");
 
   const lang = localeToBcp47[locale] ?? "de-DE";
 
   useEffect(() => {
     const engine = getTtsEngine();
-    setIsTtsSupported(
-      typeof window !== "undefined" &&
-        "speechSynthesis" in window &&
-        "SpeechSynthesisUtterance" in window
-    );
 
     return engine.subscribe(({ messageId, playbackState: state }) => {
       setActiveMessageId(messageId);
       setPlaybackState(state);
+      setActiveProviderId(engine.activeProviderId);
     });
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function initTts() {
+      const browserOk =
+        typeof window !== "undefined" &&
+        "speechSynthesis" in window &&
+        "SpeechSynthesisUtterance" in window;
+
+      const openAiOk = await probeOpenAiTtsAvailability();
+      if (cancelled) return;
+
+      const engine = getTtsEngine();
+
+      if (openAiOk) {
+        engine.setProvider("openai");
+        setActiveProviderId("openai");
+        setAvailableVoices(
+          OPENAI_TTS_VOICES.map((voice) => ({
+            id: toOpenAiVoiceUri(voice.id),
+            name: t(`settings.openaiVoices.${voice.id}`),
+          }))
+        );
+        setIsTtsSupported(true);
+        return;
+      }
+
+      if (browserOk) {
+        engine.setProvider("browser");
+        setActiveProviderId("browser");
+        const voices = await loadVoicesForLanguage(lang);
+        if (!cancelled) {
+          setAvailableVoices(
+            voices.map((v) => ({ id: v.voiceURI, name: v.name }))
+          );
+          setIsTtsSupported(true);
+        }
+        return;
+      }
+
+      setIsTtsSupported(false);
+    }
+
+    void initTts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, t]);
 
   useEffect(() => {
     return subscribeTtsPreferences(setPreferences);
   }, []);
 
   useEffect(() => {
+    if (activeProviderId !== "browser") return;
     if (typeof window === "undefined" || !window.speechSynthesis) return;
 
     let cancelled = false;
 
     async function refreshVoices() {
       const voices = await loadVoicesForLanguage(lang);
-      if (!cancelled) setAvailableVoices(voices);
+      if (!cancelled) {
+        setAvailableVoices(
+          voices.map((v) => ({ id: v.voiceURI, name: v.name }))
+        );
+      }
     }
 
     void refreshVoices();
@@ -100,7 +164,7 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
       cancelled = true;
       synth.removeEventListener("voiceschanged", refreshVoices);
     };
-  }, [lang]);
+  }, [lang, activeProviderId]);
 
   const playMessage = useCallback(
     (messageId: string, text: string, speakLang?: string) => {
@@ -143,6 +207,7 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
       activeMessageId,
       playbackState,
       isTtsSupported,
+      activeProviderId,
       preferences,
       availableVoices,
       playMessage,
@@ -156,6 +221,7 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
       activeMessageId,
       playbackState,
       isTtsSupported,
+      activeProviderId,
       preferences,
       availableVoices,
       playMessage,

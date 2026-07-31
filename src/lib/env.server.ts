@@ -34,3 +34,17 @@ export function getOpenAIMaxTokens(): number {
 export function isOpenAIConfigured(): boolean {
   return !isPlaceholder(getOpenAIApiKey());
 }
+
+/** OpenAI TTS Modell – tts-1 (schnell) oder tts-1-hd (Premium-Qualität). */
+export function getOpenAITtsModel(): string {
+  return readEnv("OPENAI_TTS_MODEL") || "tts-1-hd";
+}
+
+/** Standard-Stimme für OpenAI TTS (nova = natürlich, gut für Deutsch). */
+export function getOpenAITtsVoice(): string {
+  return readEnv("OPENAI_TTS_VOICE") || "nova";
+}
+
+export function isOpenAITtsConfigured(): boolean {
+  return isOpenAIConfigured();
+}
