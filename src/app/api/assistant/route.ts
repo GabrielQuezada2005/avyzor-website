@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/security";
 import { AssistantServiceError } from "@/lib/assistant/errors";
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
+import { processRecommendations } from "@/lib/assistant/recommendations";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
   assistantRequestSchema,
@@ -94,11 +95,23 @@ export async function POST(request: NextRequest) {
         messages
       );
 
-      leadBehaviorPrompt = behaviorPrompt;
+      const { recommendationPrompt, result: recommendationResult } =
+        processRecommendations({
+          sessionId,
+          messages,
+          leadScoreResult: scoreResult,
+        });
 
-      // Internes Logging – Score wird nie an den Client zurückgegeben.
+      leadBehaviorPrompt = [behaviorPrompt, recommendationPrompt]
+        .filter(Boolean)
+        .join("\n\n");
+
+      // Internes Logging – Score und Empfehlungen werden nie an den Client zurückgegeben.
       console.info(
         `[lead-scoring] session=${sessionId} score=${scoreResult.score} category=${scoreResult.category}`
+      );
+      console.info(
+        `[recommendations] session=${sessionId} package=${recommendationResult.primary.packageName} fit=${recommendationResult.primary.fitScore} addons=${recommendationResult.addOns.map((a) => a.name).join(",") || "none"}`
       );
     }
 
