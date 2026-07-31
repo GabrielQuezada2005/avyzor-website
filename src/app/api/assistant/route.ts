@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/security";
 import { AssistantServiceError } from "@/lib/assistant/errors";
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
+import { processObjectionHandling } from "@/lib/assistant/objection-handling";
 import { processRecommendations } from "@/lib/assistant/recommendations";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
@@ -102,17 +103,29 @@ export async function POST(request: NextRequest) {
           leadScoreResult: scoreResult,
         });
 
-      leadBehaviorPrompt = [behaviorPrompt, recommendationPrompt]
+      const { objectionPrompt, result: objectionResult } =
+        processObjectionHandling({ sessionId, messages });
+
+      leadBehaviorPrompt = [
+        behaviorPrompt,
+        recommendationPrompt,
+        objectionPrompt,
+      ]
         .filter(Boolean)
         .join("\n\n");
 
-      // Internes Logging – Score und Empfehlungen werden nie an den Client zurückgegeben.
+      // Internes Logging – interne Analysen werden nie an den Client zurückgegeben.
       console.info(
         `[lead-scoring] session=${sessionId} score=${scoreResult.score} category=${scoreResult.category}`
       );
       console.info(
         `[recommendations] session=${sessionId} package=${recommendationResult.primary.packageName} fit=${recommendationResult.primary.fitScore} addons=${recommendationResult.addOns.map((a) => a.name).join(",") || "none"}`
       );
+      if (objectionResult.primary) {
+        console.info(
+          `[objection-handling] session=${sessionId} objection=${objectionResult.primary.type} confidence=${objectionResult.primary.confidence.toFixed(2)}`
+        );
+      }
     }
 
     const message = await generateOpenAIResponse(messages, {
