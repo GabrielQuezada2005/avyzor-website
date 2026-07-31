@@ -9,19 +9,16 @@ import type { LeadCategory, LeadScoreResult } from "./types";
 
 const BEHAVIOR_BY_CATEGORY: Record<LeadCategory, string> = {
   low: `LEAD-PROFIL (INTERN – NUTZER SIEHT DIES NICHT):
-Kaufbereitschaft: Niedrig. Fokus auf Vertrauen und Information.
-- Mehr hilfreiche Informationen geben, ohne zu verkaufen.
-- Vertrauen aufbauen durch Verständnis und Branchenwissen.
-- Keine Verkaufsversuche, keine Paketempfehlungen, keine Terminvorschläge.
-- Weiter gezielte Rückfragen stellen, um Bedürfnisse zu verstehen.
-- Geduldig bleiben, keinen Druck ausüben.`,
+Kaufbereitschaft: Niedrig. Fokus auf Vertrauen und kompetente Orientierung.
+- Branchenwissen zeigen und erste Lösungsrichtung empfehlen – ab 2. Nachricht.
+- Keine Preise nennen, keine Terminvorschläge erzwingen.
+- Selbstbewusst beraten, nicht nur Fragen stellen.`,
 
   interested: `LEAD-PROFIL (INTERN – NUTZER SIEHT DIES NICHT):
-Kaufbereitschaft: Mittel. Fokus auf gezielte Beratung.
-- Gezielt beraten und konkrete Vorteile für die Situation erklären.
-- Rückfragen stellen, um den Bedarf weiter zu klären.
+Kaufbereitschaft: Mittel. Fokus auf konkrete Empfehlungen.
+- Ab 2. bis 3. Nachricht: konkrete Lösung mit Begründung empfehlen.
 - Geschäftlichen Nutzen betonen, nicht Features auflisten.
-- Noch keine aktive Terminbuchung – erst wenn der Kunde Interesse signalisiert.
+- Termin anbieten, wenn Interesse erkennbar – als logischer nächster Schritt.
 - Preise nur nennen, wenn der Kunde ausdrücklich danach fragt.`,
 
   high: `LEAD-PROFIL (INTERN – NUTZER SIEHT DIES NICHT):

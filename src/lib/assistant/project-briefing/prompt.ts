@@ -54,9 +54,9 @@ export function buildBriefingPrompt(briefing: ProjectBriefing): string {
   ) {
     const nextAsk = getMissingFieldsByPriority(briefing.missingFields, 1)[0];
     lines.push(
-      `- Datenvollständigkeit unter ${COMPLETENESS_TARGET} % – fehlende Info natürlich im Gespräch ergänzen.`,
-      `- Wenn passend, EINE gezielte Frage zu: „${nextAsk}" – nicht wie ein Formular.`,
-      "- Frage nur stellen, wenn es natürlich in den Gesprächsfluss passt.",
+      `- Datenvollständigkeit unter ${COMPLETENESS_TARGET} % – fehlende Info nur nebenbei ergänzen, nicht als Formular.`,
+      `- Priorität: konkrete Empfehlung geben – nicht nur nach '${nextAsk}' fragen.`,
+      "- Fehlende Info nur einweben, wenn es natürlich passt und keine Empfehlung blockiert.",
       "- Niemals mehrere fehlende Felder auf einmal abfragen."
     );
   } else if (briefing.confidenceScore >= COMPLETENESS_TARGET) {

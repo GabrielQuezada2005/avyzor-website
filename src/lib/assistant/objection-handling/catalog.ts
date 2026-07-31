@@ -21,13 +21,13 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
       "Das verstehe ich – der Preis spielt eine wichtige Rolle.",
     ],
     explanationHints: [
-      "Einstieg ab 1.990 Euro netto als Alternative erwähnen, wenn passend.",
-      "Ratenzahlung ansprechen: 50 % Start, 50 % Fertigstellung.",
+      "ZUERST geschäftlichen Nutzen und Wert der Lösung erklären – nicht sofort auf den Preis eingehen.",
+      "Erst danach Alternativen: kleinerer Umfang, Einstieg ab 1.990 Euro netto, Ratenzahlung.",
       "Geschäftlichen Nutzen betonen, nicht den Preis rechtfertigen.",
     ],
     followUpQuestions: [
-      "Darf ich fragen, ob Ihre Sorge eher der Gesamtpreis oder die monatliche Belastung ist?",
-      "Was hätten Sie ungefähr eingeplant?",
+      "Was wäre Ihnen am wichtigsten – mehr Anfragen, weniger Aufwand oder bessere Sichtbarkeit?",
+      "Sollen wir einen schlankeren Einstieg besprechen?",
     ],
     nextStepOffers: [
       "Kleineren Umfang besprechen",
@@ -87,7 +87,7 @@ export const OBJECTION_CATALOG: ObjectionDefinition[] = [
       "Auf Entscheidungskriterien des Kunden eingehen.",
     ],
     followUpQuestions: [
-      "Darf ich fragen, worauf Sie bei Ihrer Entscheidung besonders achten?",
+      "Worauf achten Sie bei Ihrer Entscheidung besonders?",
       "Was wäre für Sie der entscheidende Faktor?",
     ],
     nextStepOffers: [
