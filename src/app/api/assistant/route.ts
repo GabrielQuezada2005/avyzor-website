@@ -7,6 +7,7 @@ import {
 import { AssistantServiceError } from "@/lib/assistant/errors";
 import { processLeadScoring } from "@/lib/assistant/lead-scoring";
 import { processObjectionHandling } from "@/lib/assistant/objection-handling";
+import { processPersonalityAnalysis } from "@/lib/assistant/personality-analysis";
 import { processRecommendations } from "@/lib/assistant/recommendations";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
@@ -106,10 +107,14 @@ export async function POST(request: NextRequest) {
       const { objectionPrompt, result: objectionResult } =
         processObjectionHandling({ sessionId, messages });
 
+      const { personalityPrompt, result: personalityResult } =
+        processPersonalityAnalysis({ sessionId, messages });
+
       leadBehaviorPrompt = [
         behaviorPrompt,
         recommendationPrompt,
         objectionPrompt,
+        personalityPrompt,
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -124,6 +129,11 @@ export async function POST(request: NextRequest) {
       if (objectionResult.primary) {
         console.info(
           `[objection-handling] session=${sessionId} objection=${objectionResult.primary.type} confidence=${objectionResult.primary.confidence.toFixed(2)}`
+        );
+      }
+      if (personalityResult.primary) {
+        console.info(
+          `[personality-analysis] session=${sessionId} profiles=${personalityResult.profiles.map((p) => p.type).join(",")}`
         );
       }
     }
