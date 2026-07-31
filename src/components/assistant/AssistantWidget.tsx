@@ -2,6 +2,7 @@
 
 import { AssistantButton } from "./AssistantButton";
 import { AssistantWindow } from "./AssistantWindow";
+import { SpeechProvider } from "./tts/SpeechContext";
 import { useAssistant } from "./useAssistant";
 
 export function AssistantWidget() {
@@ -16,7 +17,7 @@ export function AssistantWidget() {
   } = useAssistant();
 
   return (
-    <>
+    <SpeechProvider>
       <AssistantWindow
         isOpen={isOpen}
         messages={messages}
@@ -26,6 +27,6 @@ export function AssistantWidget() {
         onClear={clearMessages}
       />
       <AssistantButton isOpen={isOpen} onClick={toggle} />
-    </>
+    </SpeechProvider>
   );
 }

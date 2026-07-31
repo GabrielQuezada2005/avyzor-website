@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/assistant";
 import { Bot, User } from "lucide-react";
+import { MessageSpeechButton } from "./tts/MessageSpeechButton";
 
 interface AssistantMessageProps {
   message: ChatMessage;
@@ -66,9 +67,17 @@ export function AssistantMessage({ message, index }: AssistantMessageProps) {
         >
           {message.content}
         </div>
-        <span className="text-[10px] text-white/30 px-1">
-          {formatTime(message.timestamp)}
-        </span>
+        <div className="flex items-center gap-2 px-1">
+          {!isUser && message.content && !isError && (
+            <MessageSpeechButton
+              messageId={message.id}
+              text={message.content}
+            />
+          )}
+          <span className="text-[10px] text-white/30">
+            {formatTime(message.timestamp)}
+          </span>
+        </div>
       </div>
     </motion.div>
   );
