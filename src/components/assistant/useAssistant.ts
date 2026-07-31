@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import {
   AssistantApiError,
+  createAssistantSessionId,
   createMessageId,
   createWelcomeMessage,
   generateAssistantResponse,
@@ -19,6 +20,7 @@ export function useAssistant(): UseAssistantReturn {
   const [error, setError] = useState<string | null>(null);
   const isProcessingRef = useRef(false);
   const messagesRef = useRef(messages);
+  const sessionIdRef = useRef(createAssistantSessionId());
 
   messagesRef.current = messages;
 
@@ -27,6 +29,7 @@ export function useAssistant(): UseAssistantReturn {
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
 
   const clearMessages = useCallback(() => {
+    sessionIdRef.current = createAssistantSessionId();
     setMessages([createWelcomeMessage()]);
     setError(null);
   }, []);
@@ -54,7 +57,8 @@ export function useAssistant(): UseAssistantReturn {
     try {
       const response = await generateAssistantResponse(
         trimmed,
-        conversationHistory
+        conversationHistory,
+        sessionIdRef.current
       );
 
       const assistantMessage: ChatMessage = {

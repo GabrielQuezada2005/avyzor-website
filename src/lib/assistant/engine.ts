@@ -30,7 +30,8 @@ function toApiMessages(
  */
 export async function generateAssistantResponse(
   _userMessage: string,
-  history: ChatMessage[]
+  history: ChatMessage[],
+  sessionId?: string
 ): Promise<string> {
   const messages = toApiMessages(history);
 
@@ -41,7 +42,10 @@ export async function generateAssistantResponse(
   const response = await fetch("/api/assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({
+      messages,
+      ...(sessionId ? { sessionId } : {}),
+    }),
   });
 
   let data: AssistantApiResponse;
@@ -66,6 +70,11 @@ export async function generateAssistantResponse(
 
 export function createMessageId(): string {
   return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/** Erzeugt eine stabile Session-ID für internes Lead-Scoring. */
+export function createAssistantSessionId(): string {
+  return `asst_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
 export function createWelcomeMessage(): ChatMessage {

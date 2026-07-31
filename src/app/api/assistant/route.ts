@@ -5,6 +5,7 @@ import {
   rateLimitResponse,
 } from "@/lib/api/security";
 import { AssistantServiceError } from "@/lib/assistant/errors";
+import { processLeadScoring } from "@/lib/assistant/lead-scoring";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
   assistantRequestSchema,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages } = result.data as AssistantRequest;
+    const { messages, sessionId } = result.data as AssistantRequest;
 
     if (messages[messages.length - 1]?.role !== "user") {
       return NextResponse.json(
@@ -85,7 +86,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const message = await generateOpenAIResponse(messages);
+    let leadBehaviorPrompt: string | undefined;
+
+    if (sessionId) {
+      const { behaviorPrompt, scoreResult } = processLeadScoring(
+        sessionId,
+        messages
+      );
+
+      leadBehaviorPrompt = behaviorPrompt;
+
+      // Internes Logging – Score wird nie an den Client zurückgegeben.
+      console.info(
+        `[lead-scoring] session=${sessionId} score=${scoreResult.score} category=${scoreResult.category}`
+      );
+    }
+
+    const message = await generateOpenAIResponse(messages, {
+      leadBehaviorPrompt,
+    });
 
     return NextResponse.json({ success: true, message });
   } catch (error) {

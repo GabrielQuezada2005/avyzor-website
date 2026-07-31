@@ -14,6 +14,13 @@ export const assistantRequestSchema = z.object({
     .array(assistantMessageSchema)
     .min(1, "Mindestens eine Nachricht erforderlich.")
     .max(40, "Konversationsverlauf ist zu lang."),
+  /** Optionale Session-ID für internes Lead-Scoring (unsichtbar für Nutzer). */
+  sessionId: z
+    .string()
+    .trim()
+    .min(8, "Session-ID zu kurz.")
+    .max(64, "Session-ID zu lang.")
+    .optional(),
 });
 
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;

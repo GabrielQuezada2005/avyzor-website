@@ -1,6 +1,7 @@
 export { ASSISTANT_CONFIG } from "./config";
 export { AssistantApiError } from "./errors";
 export {
+  createAssistantSessionId,
   createMessageId,
   createWelcomeMessage,
   generateAssistantResponse,

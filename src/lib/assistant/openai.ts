@@ -13,6 +13,11 @@ import type { AssistantRequest } from "./validation";
 
 const MAX_HISTORY_MESSAGES = 20;
 
+export interface GenerateOpenAIOptions {
+  /** Interner Prompt-Zusatz für Lead-Scoring-Verhaltensanpassung (unsichtbar für Nutzer). */
+  leadBehaviorPrompt?: string;
+}
+
 let openaiClient: OpenAI | null = null;
 let openaiClientKey: string | null = null;
 
@@ -45,12 +50,20 @@ function trimConversationHistory(
 }
 
 export async function generateOpenAIResponse(
-  messages: AssistantRequest["messages"]
+  messages: AssistantRequest["messages"],
+  options?: GenerateOpenAIOptions
 ): Promise<string> {
   const client = getOpenAIClient();
   const trimmedMessages = trimConversationHistory(messages);
   const model = getOpenAIModel();
   const maxTokens = getOpenAIMaxTokens();
+
+  const systemPrompt = [
+    buildAssistantSystemPrompt(),
+    options?.leadBehaviorPrompt,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   try {
     const completion = await client.chat.completions.create({
@@ -58,7 +71,7 @@ export async function generateOpenAIResponse(
       max_tokens: maxTokens,
       temperature: 0.7,
       messages: [
-        { role: "system", content: buildAssistantSystemPrompt() },
+        { role: "system", content: systemPrompt },
         ...trimmedMessages,
       ],
     });
