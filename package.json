@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/ensure-dev-cache.mjs && next dev",
-    "build": "node scripts/ensure-dev-cache.mjs && next build",
+    "dev": "node scripts/ensure-dev-cache.mjs dev && next dev",
+    "build": "node scripts/ensure-dev-cache.mjs build && next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next"

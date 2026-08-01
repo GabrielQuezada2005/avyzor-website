@@ -1,13 +1,12 @@
 import type { AbstractIntlMessages } from "next-intl";
-import type { Locale } from "@/i18n/routing";
+import { locales, type Locale } from "@/i18n/locale-config";
 
-const loaders: Record<Locale, () => Promise<{ default: unknown }>> = {
-  de: () => import("./de"),
-  en: () => import("./en"),
-  es: () => import("./es"),
-  fr: () => import("./fr"),
-  it: () => import("./it"),
-};
+const loaders = Object.fromEntries(
+  locales.map((locale) => [
+    locale,
+    () => import(`./${locale}`),
+  ])
+) as Record<Locale, () => Promise<{ default: unknown }>>;
 
 export async function getMessages(locale: string): Promise<AbstractIntlMessages> {
   const loader = loaders[locale as Locale] ?? loaders.de;

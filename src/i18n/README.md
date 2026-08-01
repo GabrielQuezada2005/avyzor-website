@@ -2,15 +2,21 @@
 
 ## Übersicht
 
-Die Website nutzt [next-intl](https://next-intl-docs.vercel.app/) mit locale-präfixierten URLs:
+Die Website nutzt [next-intl](https://next-intl-docs.vercel.app/) mit locale-präfixierten URLs.
 
-| Locale | URL      | Sprache   |
-|--------|----------|-----------|
-| `de`   | `/de`    | Deutsch   |
-| `en`   | `/en`    | Englisch  |
-| `es`   | `/es`    | Spanisch  |
-| `fr`   | `/fr`    | Französisch |
-| `it`   | `/it`    | Italienisch |
+**Zentrale Konfiguration:** `src/i18n/locale-config.ts`
+
+| Locale | URL   | Sprache      |
+|--------|-------|--------------|
+| `de`   | `/de` | Deutsch      |
+| `en`   | `/en` | Englisch     |
+| `es`   | `/es` | Spanisch     |
+| `fr`   | `/fr` | Französisch  |
+| `it`   | `/it` | Italienisch  |
+| `ru`   | `/ru` | Russisch     |
+| `tr`   | `/tr` | Türkisch     |
+| `pt`   | `/pt` | Portugiesisch|
+| `nl`   | `/nl` | Niederländisch |
 
 Standard-Locale: **de** (Redirect von `/` → `/de`)
 
@@ -19,7 +25,8 @@ Standard-Locale: **de** (Redirect von `/` → `/de`)
 ```
 src/
 ├── i18n/
-│   ├── routing.ts       # Locales, defaultLocale, BCP-47 Mapping
+│   ├── locale-config.ts # EINZIGE Quelle: Locales, Labels, BCP-47, OG, Intl
+│   ├── routing.ts       # next-intl Routing (importiert locale-config)
 │   ├── request.ts       # Server: lädt Messages lazy pro Request
 │   └── navigation.ts    # Typisierte Link/Router-Hooks mit Locale-Präfix
 ├── middleware.ts        # Locale-Erkennung, Cookie-Persistenz, Redirects
@@ -40,6 +47,7 @@ src/
 2. **`[locale]/layout.tsx`** lädt Messages via `getMessages()` (nur aktive Sprache)
 3. **`NextIntlClientProvider`** stellt Übersetzungen für Client-Komponenten bereit
 4. **Server-Komponenten** nutzen `getTranslations()` aus `next-intl/server`
+5. **`LanguageSwitcher`** liest Sprachen aus `LOCALE_DEFINITIONS` (locale-config)
 
 ## Namespaces
 
@@ -54,22 +62,13 @@ src/
 | `assistant`    | KI-Chat UI                                  |
 | `voice` / `tts`| Voice Mode & Vorlesefunktion                |
 | `legal`        | Datenschutz, Impressum                      |
-
-## KI-Assistent
-
-- UI-Strings aus `assistant`-Namespace
-- `locale` wird an `/api/assistant` übergeben
-- `buildLocaleInstruction()` prepended zum System-Prompt
-- Bei Sprachwechsel: Chat-Reset mit neuer Welcome-Message
-- Voice/TTS synchronisiert über `localeToBcp47`
+| `common`       | WhatsApp, Fehler, Sprachwähler              |
 
 ## Neue Sprache hinzufügen
 
-1. Locale in `src/i18n/routing.ts` → `locales` Array ergänzen
+1. Eintrag in `src/i18n/locale-config.ts` → `LOCALE_DEFINITIONS` ergänzen
 2. Ordner `src/messages/{locale}/` mit allen 22 Namespace-Dateien anlegen (Struktur wie `de/`)
-3. Loader in `src/messages/index.ts` registrieren
-4. `localeToBcp47` und `localeToOg` in `routing.ts` ergänzen
-5. Optional: `z.enum` in `assistant/validation.ts` erweitern
+3. Fertig — Routing, Middleware, Sitemap, LanguageSwitcher und Message-Loader übernehmen die Sprache automatisch
 
 ## SEO
 

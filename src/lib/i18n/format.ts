@@ -1,12 +1,4 @@
-import type { Locale } from "@/i18n/routing";
-
-const localeToIntl: Record<Locale, string> = {
-  de: "de-DE",
-  en: "en-US",
-  es: "es-ES",
-  fr: "fr-FR",
-  it: "it-IT",
-};
+import { localeToIntl, type Locale } from "@/i18n/locale-config";
 
 export function formatPrice(amount: number, locale: string): string {
   const intlLocale = localeToIntl[locale as Locale] ?? "de-DE";

@@ -3,54 +3,24 @@
 /**
  * Internationalisierung – Sprachumschalter
  *
- * Kompakter Premium-Button mit Dropdown.
- * Sprachen zentral in LANGUAGE_OPTIONS – locale setzen, sobald Routing existiert.
+ * Lädt verfügbare Sprachen aus locale-config.ts.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Globe } from "lucide-react";
+import {
+  LOCALE_DEFINITIONS,
+  getLocaleDefinition,
+  type Locale,
+} from "@/i18n/locale-config";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { useTransition } from "react";
-
-interface LanguageOption {
-  id: string;
-  label: string;
-  /** Gesetzt, sobald next-intl-Locale verfügbar ist */
-  locale?: Locale;
-}
-
-/** Erweiterbare Sprachliste – neue Einträge hier ergänzen. */
-export const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
-  { id: "de", label: "Deutsch", locale: "de" },
-  { id: "en", label: "English", locale: "en" },
-  { id: "es", label: "Español", locale: "es" },
-  { id: "fr", label: "Français", locale: "fr" },
-  { id: "it", label: "Italiano", locale: "it" },
-  { id: "ru", label: "Русский" },
-  { id: "pl", label: "Polski" },
-  { id: "tr", label: "Türkçe" },
-  { id: "nl", label: "Nederlands" },
-  { id: "pt", label: "Português" },
-  { id: "ar", label: "العربية" },
-  { id: "zh", label: "中文" },
-  { id: "ja", label: "日本語" },
-  { id: "ko", label: "한국어" },
-];
 
 interface LanguageSwitcherProps {
   className?: string;
   /** Volle Breite im Mobile-Drawer */
   fullWidth?: boolean;
-}
-
-function findOptionByLocale(locale: Locale): LanguageOption {
-  return (
-    LANGUAGE_OPTIONS.find((option) => option.locale === locale) ??
-    LANGUAGE_OPTIONS[0]
-  );
 }
 
 export function LanguageSwitcher({
@@ -60,20 +30,24 @@ export function LanguageSwitcher({
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations("common.languageSwitcher");
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const activeOption = useMemo(() => findOptionByLocale(locale), [locale]);
+  const activeOption = useMemo(
+    () => getLocaleDefinition(locale) ?? LOCALE_DEFINITIONS[0],
+    [locale]
+  );
 
-  function handleSelect(option: LanguageOption) {
-    if (!option.locale || option.locale === locale) {
+  function handleSelect(nextLocale: Locale) {
+    if (nextLocale === locale) {
       setIsOpen(false);
       return;
     }
 
     startTransition(() => {
-      router.replace(pathname, { locale: option.locale });
+      router.replace(pathname, { locale: nextLocale });
       setIsOpen(false);
     });
   }
@@ -106,7 +80,7 @@ export function LanguageSwitcher({
     >
       <button
         type="button"
-        aria-label="Sprache wählen"
+        aria-label={t("ariaLabel")}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         disabled={isPending}
@@ -136,32 +110,29 @@ export function LanguageSwitcher({
       {isOpen && (
         <ul
           role="listbox"
-          aria-label="Sprache wählen"
+          aria-label={t("listAriaLabel")}
           className={cn(
             "absolute right-0 top-full z-50 mt-2 max-h-72 min-w-[12rem] overflow-y-auto rounded-xl",
             "border border-white/10 bg-dark-900/95 py-1 shadow-premium backdrop-blur-xl",
             fullWidth && "left-0 right-0 min-w-0"
           )}
         >
-          {LANGUAGE_OPTIONS.map((option) => {
-            const isActive = option.locale === locale;
-            const isAvailable = Boolean(option.locale);
+          {LOCALE_DEFINITIONS.map((option) => {
+            const isActive = option.code === locale;
 
             return (
-              <li key={option.id} role="presentation">
+              <li key={option.code} role="presentation">
                 <button
                   type="button"
                   role="option"
                   aria-selected={isActive}
-                  disabled={isPending || !isAvailable}
-                  onClick={() => handleSelect(option)}
+                  disabled={isPending}
+                  onClick={() => handleSelect(option.code)}
                   className={cn(
                     "flex w-full items-center px-3 py-2.5 text-left text-sm transition-colors duration-200",
                     isActive
                       ? "bg-gold-500/15 text-gold-400"
-                      : isAvailable
-                        ? "text-white/70 hover:bg-white/5 hover:text-gold-400"
-                        : "cursor-not-allowed text-white/25"
+                      : "text-white/70 hover:bg-white/5 hover:text-gold-400"
                   )}
                 >
                   {option.label}
