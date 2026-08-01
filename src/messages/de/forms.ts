@@ -67,6 +67,7 @@ export default {
       label: "Uhrzeit *",
       placeholder: "Uhrzeit wählen *",
       suffix: "Uhr",
+      noSlots: "Keine Termine verfügbar. Bitte wählen Sie ein anderes Datum.",
     },
     service: {
       label: "Beratungsart",
@@ -100,5 +101,14 @@ export default {
     genericError: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     required: "Pflichtfeld",
     sending: "Wird gesendet…",
+  },
+  validation: {
+    nameMin: "Name muss mindestens 2 Zeichen haben.",
+    emailInvalid: "Ungültige E-Mail-Adresse.",
+    messageMin: "Nachricht muss mindestens 10 Zeichen haben.",
+    serviceRequired: "Bitte wählen Sie eine Leistung.",
+    dateRequired: "Bitte wählen Sie ein Datum.",
+    timeRequired: "Bitte wählen Sie eine Uhrzeit.",
+    consentRequired: "Bitte stimmen Sie der Datenschutzerklärung zu.",
   },
 };

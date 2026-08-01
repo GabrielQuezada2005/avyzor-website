@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createCheckoutSession, STRIPE_PRICES, stripe } from "@/lib/stripe";
-import { isStripeConfigured } from "@/lib/env";
+import { createPlanPaymentCheckout } from "@/lib/payments/create-checkout.server";
 import { stripeCheckoutSchema } from "@/lib/validations";
 import { checkRateLimit, rateLimitResponse } from "@/lib/api/security";
 
@@ -20,24 +19,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planId, email } = result.data;
-    const priceId = STRIPE_PRICES[planId];
+    const { planId, email, locale } = result.data;
+    const checkout = await createPlanPaymentCheckout({ planId, email, locale });
 
-    if (!isStripeConfigured() || !stripe || !priceId) {
+    if ("fallback" in checkout) {
       return NextResponse.json({
         success: false,
         fallback: true,
-        message: "Stripe not configured – redirecting to contact form",
+        message: checkout.message,
       });
     }
 
-    const session = await createCheckoutSession(
-      priceId,
-      email ?? "kontakt@avyzor.de",
-      { planId }
-    );
-
-    return NextResponse.json({ success: true, url: session.url });
+    return NextResponse.json({
+      success: true,
+      url: checkout.url,
+      paymentId: checkout.payment?.id,
+    });
   } catch (error) {
     console.error("Stripe checkout error:", error);
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { env, isStripeConfigured } from "@/lib/env";
+import { STRIPE_CHECKOUT_PAYMENT_METHOD_TYPES } from "@/lib/payments/constants";
 
 export const stripe = isStripeConfigured()
   ? new Stripe(env.stripe.secretKey, { apiVersion: "2025-02-24.acacia" })
@@ -11,22 +12,10 @@ export const STRIPE_PRICES = {
   enterprise: env.stripe.priceEnterprise,
 } as const;
 
-export async function createCheckoutSession(
-  priceId: string,
-  customerEmail: string,
-  metadata?: Record<string, string>
-) {
-  if (!stripe) {
-    throw new Error("Stripe is not configured");
-  }
-
-  return stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card"],
-    line_items: [{ price: priceId, quantity: 1 }],
-    customer_email: customerEmail,
-    metadata,
-    success_url: `${env.siteUrl}/?payment=success`,
-    cancel_url: `${env.siteUrl}/#preise`,
-  });
-}
+/**
+ * Stripe Checkout Zahlungsarten.
+ * Apple Pay und Google Pay werden über card-Wallets automatisch angeboten.
+ */
+export const STRIPE_PAYMENT_METHOD_TYPES = [
+  ...STRIPE_CHECKOUT_PAYMENT_METHOD_TYPES,
+] as Stripe.Checkout.SessionCreateParams.PaymentMethodType[];

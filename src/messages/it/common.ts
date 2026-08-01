@@ -2,7 +2,9 @@ export default {
   "skipLink": "Vai al contenuto",
   "languageSwitcher": {
     "ariaLabel": "Scegli la lingua",
-    "listAriaLabel": "Lingue disponibili"
+    "listAriaLabel": "Lingue disponibili",
+    "currentLanguage": "Lingua attuale: {language}",
+    "switchTo": "Passa a {language}"
   },
   "whatsapp": {
     "ariaLabel": "Contatta via WhatsApp",
@@ -10,7 +12,9 @@ export default {
     "defaultMessage": "Ciao AVYZOR, sono interessato ai vostri servizi premium."
   },
   "loading": "Caricamento…",
+  "errorCode": "500",
   "errorTitle": "Si è verificato un errore",
   "errorGeneric": "Si è verificato un errore imprevisto. Riprova.",
-  "errorRetry": "Riprova"
+  "errorRetry": "Riprova",
+  "errorHome": "Torna alla homepage"
 };

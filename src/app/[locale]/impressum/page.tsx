@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { buildLocalizedPageMetadata } from "@/lib/seo";
 import { SITE_CONFIG } from "@/lib/constants";
 import type { Locale } from "@/i18n/routing";
 
@@ -22,13 +23,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "legal.imprint" });
 
-  return {
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/impressum",
     title: t("title"),
     description: t("metaDescription"),
-    alternates: {
-      canonical: `${SITE_CONFIG.url}/${locale}/impressum`,
-    },
-  };
+    ogImageAlt: t("metaDescription"),
+  });
 }
 
 export default async function ImpressumPage() {

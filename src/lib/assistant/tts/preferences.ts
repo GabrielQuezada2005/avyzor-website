@@ -15,7 +15,8 @@ export interface TtsPreferences {
   volume: number;
 }
 
-export const DEFAULT_TTS_RATE = 1.0;
+/** Browser-Fallback: leicht erhöhtes Standardtempo (~10 %). */
+export const DEFAULT_TTS_RATE = 1.1;
 
 export const DEFAULT_TTS_PREFERENCES: TtsPreferences = {
   voiceUri: null,

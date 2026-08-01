@@ -9,7 +9,13 @@ import {
   resolveElevenLabsVoice,
   type ElevenLabsVoiceId,
 } from "./elevenlabs-voices";
+import { applyQuestionProsody } from "./apply-question-prosody";
 import { sanitizeTextForSpeech } from "./sanitize-for-speech";
+import { normalizeSpeechFlow } from "./normalize-speech-flow";
+import {
+  headersToRecord,
+  logTtsDebugReport,
+} from "./tts-debug-log";
 import { TtsServiceError } from "./tts-service-error";
 
 export { TtsServiceError };
@@ -23,8 +29,8 @@ export interface GenerateElevenLabsSpeechOptions {
 
 const ELEVENLABS_API = "https://api.elevenlabs.io/v1";
 
-/** Flüssiges Sprechtempo (~1.07× bei UI-Standard 1.0). */
-const FLUENT_ELEVENLABS_SPEED = 1.07;
+/** Flüssiges Sprechtempo (~1.11× bei UI-Standard 1.0, ca. 11 % schneller). */
+const FLUENT_ELEVENLABS_SPEED = 1.11;
 const UI_RATE_BASELINE = 1.0;
 
 function normalizeElevenLabsSpeed(speed?: number): number {
@@ -42,9 +48,9 @@ function buildRequestBody(
     text,
     model_id: getElevenLabsModelId(),
     voice_settings: {
-      stability: 0.52,
+      stability: 0.5,
       similarity_boost: 0.85,
-      style: 0.12,
+      style: 0.18,
       use_speaker_boost: true,
     },
     speed: normalizeElevenLabsSpeed(speed),
@@ -66,7 +72,13 @@ function resolveVoiceAndText(
     );
   }
 
-  const text = sanitizeTextForSpeech(options.text);
+  const sanitized = sanitizeTextForSpeech(options.text);
+  const normalized = normalizeSpeechFlow(sanitized);
+  const modelId = getElevenLabsModelId();
+  const text = applyQuestionProsody(normalized, {
+    target: "elevenlabs",
+    elevenLabsSupportsAudioTags: modelId.includes("v3"),
+  });
   if (!text) {
     throw new TtsServiceError("Kein Text zum Vorlesen.", "EMPTY_TEXT", 400);
   }
@@ -110,9 +122,11 @@ export async function generateElevenLabsSpeech(
 ): Promise<Buffer> {
   const { voiceId, text } = resolveVoiceAndText(options);
   const speed = options.speed ?? UI_RATE_BASELINE;
+  const requestUrl = `${ELEVENLABS_API}/text-to-speech/${voiceId}`;
+  const modelId = getElevenLabsModelId();
 
   const response = await fetch(
-    `${ELEVENLABS_API}/text-to-speech/${voiceId}`,
+    requestUrl,
     {
       method: "POST",
       headers: {
@@ -126,8 +140,29 @@ export async function generateElevenLabsSpeech(
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "");
+    logTtsDebugReport({
+      ttsProvider: "elevenlabs",
+      voiceId,
+      model: modelId,
+      responseStatus: response.status,
+      audioSource: "none (ElevenLabs API error)",
+      requestUrl,
+      responseHeaders: headersToRecord(response.headers),
+      phase: "server-upstream",
+    });
     handleElevenLabsError(response.status, errorBody);
   }
+
+  logTtsDebugReport({
+    ttsProvider: "elevenlabs",
+    voiceId,
+    model: modelId,
+    responseStatus: response.status,
+    audioSource: "ElevenLabs API",
+    requestUrl,
+    responseHeaders: headersToRecord(response.headers),
+    phase: "server-upstream",
+  });
 
   return Buffer.from(await response.arrayBuffer());
 }
@@ -138,9 +173,11 @@ export async function generateElevenLabsSpeechStream(
 ): Promise<ReadableStream<Uint8Array>> {
   const { voiceId, text } = resolveVoiceAndText(options);
   const speed = options.speed ?? UI_RATE_BASELINE;
+  const requestUrl = `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream?optimize_streaming_latency=4`;
+  const modelId = getElevenLabsModelId();
 
   const response = await fetch(
-    `${ELEVENLABS_API}/text-to-speech/${voiceId}/stream?optimize_streaming_latency=4`,
+    requestUrl,
     {
       method: "POST",
       headers: {
@@ -154,8 +191,29 @@ export async function generateElevenLabsSpeechStream(
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "");
+    logTtsDebugReport({
+      ttsProvider: "elevenlabs",
+      voiceId,
+      model: modelId,
+      responseStatus: response.status,
+      audioSource: "none (ElevenLabs API error)",
+      requestUrl,
+      responseHeaders: headersToRecord(response.headers),
+      phase: "server-upstream",
+    });
     handleElevenLabsError(response.status, errorBody);
   }
+
+  logTtsDebugReport({
+    ttsProvider: "elevenlabs",
+    voiceId,
+    model: modelId,
+    responseStatus: response.status,
+    audioSource: "ElevenLabs API (stream)",
+    requestUrl,
+    responseHeaders: headersToRecord(response.headers),
+    phase: "server-upstream",
+  });
 
   if (!response.body) {
     throw new TtsServiceError(

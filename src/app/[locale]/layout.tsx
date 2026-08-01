@@ -1,28 +1,27 @@
-import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
-import { AssistantWidget } from "@/components/assistant/AssistantWidget";
+import { AssistantWidgetLazy } from "@/components/assistant/AssistantWidgetLazy";
 import { SkipLink } from "@/components/layout/SkipLink";
-import { routing, localeToOg, type Locale } from "@/i18n/routing";
-import { SITE_CONFIG } from "@/lib/constants";
+import { routing, type Locale } from "@/i18n/routing";
+import {
+  buildProfessionalServiceJsonLd,
+  buildSiteLayoutMetadata,
+  buildWebSiteJsonLd,
+} from "@/lib/seo";
+import { fontVariables } from "@/lib/fonts";
 import "../globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -35,77 +34,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "metadata" });
 
-  return {
-    metadataBase: new URL(SITE_CONFIG.url),
-    title: {
-      default: t("title"),
-      template: `%s | ${SITE_CONFIG.name}`,
-    },
+  return buildSiteLayoutMetadata(locale, {
+    title: t("title"),
     description: t("description"),
     keywords: t.raw("keywords") as string[],
-    authors: [{ name: SITE_CONFIG.name }],
-    creator: SITE_CONFIG.name,
-    icons: {
-      icon: "/favicon.png",
-      apple: "/apple-touch-icon.png",
-    },
-    openGraph: {
-      type: "website",
-      locale: localeToOg[locale],
-      url: `${SITE_CONFIG.url}/${locale}`,
-      siteName: SITE_CONFIG.name,
-      title: t("title"),
-      description: t("description"),
-      images: [
-        {
-          url: "/og-image.jpg",
-          width: 1200,
-          height: 630,
-          alt: t("ogImageAlt"),
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: t("title"),
-      description: t("description"),
-      images: ["/og-image.jpg"],
-    },
-    robots: {
-      index: true,
-      follow: true,
-    },
-    alternates: {
-      canonical: `${SITE_CONFIG.url}/${locale}`,
-      languages: Object.fromEntries(
-        routing.locales.map((loc) => [loc, `${SITE_CONFIG.url}/${loc}`])
-      ),
-    },
-  };
-}
-
-function buildJsonLd(locale: Locale) {
-  const jsonLd: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    name: SITE_CONFIG.name,
-    url: `${SITE_CONFIG.url}/${locale}`,
-    email: SITE_CONFIG.email,
-    priceRange: "€€€€",
-    areaServed: locale.toUpperCase(),
-    serviceType: [
-      "Premium Website Development",
-      "AI Chatbot Development",
-      "Business Automation",
-      "SEO Services",
-    ],
-  };
-
-  if (SITE_CONFIG.phone) {
-    jsonLd.telephone = SITE_CONFIG.phone;
-  }
-
-  return jsonLd;
+    ogImageAlt: t("ogImageAlt"),
+  });
 }
 
 export default async function LocaleLayout({
@@ -120,24 +54,34 @@ export default async function LocaleLayout({
   }
 
   const messages = await getMessages();
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const serviceTypes = t.raw("jsonLd.serviceTypes") as string[];
+
+  const structuredData = [
+    buildWebSiteJsonLd(locale),
+    buildProfessionalServiceJsonLd(locale, serviceTypes),
+  ];
 
   return (
-    <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
+    <html lang={locale} className={fontVariables}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildJsonLd(locale)),
+            __html: JSON.stringify(structuredData),
           }}
         />
       </head>
-      <body className="antialiased">
+      <body
+        className="antialiased bg-dark-900 text-white font-sans min-h-screen"
+        style={{ backgroundColor: "#0a0a0a", color: "#ffffff" }}
+      >
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SkipLink />
           <Header />
           <main id="main-content">{children}</main>
           <Footer />
-          <AssistantWidget />
+          <AssistantWidgetLazy />
           <WhatsAppButton />
         </NextIntlClientProvider>
       </body>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { localeCodes } from "@/i18n/locale-config";
 
 const honeypotField = z
   .string()
@@ -52,11 +53,29 @@ export const newsletterSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse"),
   consent: consentField,
   website: honeypotField,
+  locale: z.enum(localeCodes).optional(),
 });
 
 export const stripeCheckoutSchema = z.object({
   planId: z.enum(["starter", "professional", "enterprise"]),
   email: z.string().email().optional(),
+  locale: z.enum(localeCodes).optional(),
+});
+
+export const crmAuthSchema = z.object({
+  password: z.string().min(1, "Passwort erforderlich."),
+});
+
+export const portalLoginSchema = z.object({
+  email: z.string().email("Ungültige E-Mail-Adresse."),
+  password: z.string().min(1, "Passwort erforderlich."),
+});
+
+export const portalRegisterSchema = z.object({
+  name: z.string().min(2, "Name muss mindestens 2 Zeichen haben."),
+  email: z.string().email("Ungültige E-Mail-Adresse."),
+  password: z.string().min(8, "Passwort muss mindestens 8 Zeichen haben."),
+  company: z.string().optional(),
 });
 
 export const newsletterConfirmSchema = z.object({

@@ -92,7 +92,8 @@ export default {
     "time": {
       "label": "Ora *",
       "placeholder": "Seleziona ora *",
-      "suffix": ""
+      "suffix": "",
+      "noSlots": "Nessun appuntamento disponibile. Scegli un'altra data."
     },
     "service": {
       "label": "Tipo di consulenza",
@@ -125,5 +126,14 @@ export default {
     "genericError": "Qualcosa è andato storto. Riprova.",
     "required": "Campo obbligatorio",
     "sending": "Invio in corso…"
+  },
+  "validation": {
+    "nameMin": "Il nome deve contenere almeno 2 caratteri.",
+    "emailInvalid": "Indirizzo e-mail non valido.",
+    "messageMin": "Il messaggio deve contenere almeno 10 caratteri.",
+    "serviceRequired": "Seleziona un servizio.",
+    "dateRequired": "Seleziona una data.",
+    "timeRequired": "Seleziona un orario.",
+    "consentRequired": "Accetta l'informativa sulla privacy."
   }
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -9,17 +9,36 @@ import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
 import { SERVICE_IDS } from "@/lib/i18n/structures";
+import {
+  createContactFormSchema,
+  zodErrorsToFieldRecord,
+} from "@/lib/i18n/form-schemas.client";
 import { Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export function ContactForm() {
   const t = useTranslations("forms.contact");
   const tCommon = useTranslations("forms.common");
+  const tValidation = useTranslations("forms.validation");
   const tServices = useTranslations("services.items");
 
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const schema = useMemo(
+    () =>
+      createContactFormSchema({
+        nameMin: tValidation("nameMin"),
+        emailInvalid: tValidation("emailInvalid"),
+        messageMin: tValidation("messageMin"),
+        serviceRequired: tValidation("serviceRequired"),
+        dateRequired: tValidation("dateRequired"),
+        timeRequired: tValidation("timeRequired"),
+        consentRequired: tValidation("consentRequired"),
+      }),
+    [tValidation]
+  );
 
   const serviceOptions = [
     { value: "", label: t("service.placeholder") },
@@ -47,6 +66,14 @@ export function ContactForm() {
       consent: formData.get("consent") === "true",
       website: formData.get("website") as string,
     };
+
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      setErrors(zodErrorsToFieldRecord(parsed.error.issues));
+      setStatus("error");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/contact", {

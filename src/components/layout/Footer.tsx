@@ -29,6 +29,7 @@ export async function Footer() {
                 width={36}
                 height={36}
                 className="w-9 h-9 object-contain"
+                loading="lazy"
               />
               <span className="font-display text-lg font-bold tracking-[0.15em]">
                 {SITE_CONFIG.name}

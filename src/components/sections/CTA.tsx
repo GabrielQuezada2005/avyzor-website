@@ -24,6 +24,7 @@ export function CTA({ title, description }: CTAProps) {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
           className="glass-gold rounded-3xl p-12 md:p-16 text-center max-w-4xl mx-auto"
         >
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">

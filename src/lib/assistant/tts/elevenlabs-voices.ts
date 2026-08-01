@@ -1,7 +1,8 @@
 /**
  * ElevenLabs Text-to-Speech – Stimmen & Sprach-Mapping
  *
- * Multilingual v2 – Daniel ist die natürlichste deutsche Premium-Stimme.
+ * Daniel (multilingual v2): männlich, warm, ruhig, selbstbewusst – Premium-Berater
+ * für Deutsch. Autoritativ ohne Nachrichtensprecher- oder Callcenter-Ton.
  */
 
 export const ELEVENLABS_TTS_VOICES = [

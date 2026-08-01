@@ -80,7 +80,7 @@ export function LanguageSwitcher({
     >
       <button
         type="button"
-        aria-label={t("ariaLabel")}
+        aria-label={t("currentLanguage", { language: activeOption.label })}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         disabled={isPending}
@@ -126,6 +126,7 @@ export function LanguageSwitcher({
                   type="button"
                   role="option"
                   aria-selected={isActive}
+                  aria-label={t("switchTo", { language: option.label })}
                   disabled={isPending}
                   onClick={() => handleSelect(option.code)}
                   className={cn(

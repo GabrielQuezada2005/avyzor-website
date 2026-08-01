@@ -13,5 +13,13 @@ export default {
     "Appointment Booking",
     "Digital Agency"
   ],
-  "ogImageAlt": "AVYZOR – Premium AI Agency"
+  "ogImageAlt": "AVYZOR – Premium AI Agency",
+  "jsonLd": {
+    "serviceTypes": [
+      "Premium Website Development",
+      "AI Chatbot Development",
+      "Business Automation",
+      "SEO Services"
+    ]
+  }
 };

@@ -21,6 +21,7 @@ export const env = {
 
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY ?? "",
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
     priceStarter: process.env.STRIPE_PRICE_STARTER ?? "",
     priceProfessional: process.env.STRIPE_PRICE_PROFESSIONAL ?? "",
     priceEnterprise: process.env.STRIPE_PRICE_ENTERPRISE ?? "",
@@ -55,10 +56,17 @@ export const env = {
 } as const;
 
 export function isSupabaseConfigured(): boolean {
+  const url = env.supabase.url.trim();
+  const anonKey = env.supabase.anonKey.trim();
+  const serviceRoleKey = env.supabase.serviceRoleKey.trim();
+
   return Boolean(
-    env.supabase.url &&
-      env.supabase.serviceRoleKey &&
-      !env.supabase.url.includes("your-project")
+    url &&
+      anonKey &&
+      serviceRoleKey &&
+      !url.includes("your-project") &&
+      !anonKey.includes("your-anon") &&
+      !serviceRoleKey.includes("your-service")
   );
 }
 
@@ -69,8 +77,17 @@ export function isResendConfigured(): boolean {
 }
 
 export function isStripeConfigured(): boolean {
+  const key = env.stripe.secretKey;
   return Boolean(
-    env.stripe.secretKey &&
+    key &&
+      !key.includes("your_key") &&
+      !key.startsWith("sk_your")
+  );
+}
+
+export function isStripePricingConfigured(): boolean {
+  return Boolean(
+    isStripeConfigured() &&
       env.stripe.priceStarter &&
       env.stripe.priceProfessional &&
       env.stripe.priceEnterprise

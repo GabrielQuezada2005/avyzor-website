@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -10,23 +10,40 @@ import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
 import { SERVICE_IDS } from "@/lib/i18n/structures";
 import { SITE_CONFIG } from "@/lib/constants";
+import {
+  createBookingFormSchema,
+  zodErrorsToFieldRecord,
+} from "@/lib/i18n/form-schemas.client";
 import { Calendar, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
-
-const timeSlots = [
-  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-  "16:00", "16:30", "17:00",
-];
 
 export function BookingForm() {
   const t = useTranslations("forms.booking");
   const tCommon = useTranslations("forms.common");
+  const tValidation = useTranslations("forms.validation");
   const tServices = useTranslations("services.items");
 
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [minDate, setMinDate] = useState("");
+
+  const schema = useMemo(
+    () =>
+      createBookingFormSchema({
+        nameMin: tValidation("nameMin"),
+        emailInvalid: tValidation("emailInvalid"),
+        messageMin: tValidation("messageMin"),
+        serviceRequired: tValidation("serviceRequired"),
+        dateRequired: tValidation("dateRequired"),
+        timeRequired: tValidation("timeRequired"),
+        consentRequired: tValidation("consentRequired"),
+      }),
+    [tValidation]
+  );
 
   const serviceOptions = [
     { value: "", label: t("service.placeholder") },
@@ -40,15 +57,55 @@ export function BookingForm() {
   const timeSuffix = t("time.suffix");
   const timeOptions = [
     { value: "", label: t("time.placeholder") },
-    ...timeSlots.map((slot) => ({
+    ...availableSlots.map((slot) => ({
       value: slot,
       label: timeSuffix ? `${slot} ${timeSuffix}` : slot,
     })),
   ];
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
+  useEffect(() => {
+    async function loadBounds() {
+      try {
+        const res = await fetch("/api/booking/availability");
+        const data = (await res.json()) as {
+          bounds?: { minDate: string };
+        };
+        if (data.bounds?.minDate) {
+          setMinDate(data.bounds.minDate);
+        }
+      } catch {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        setMinDate(tomorrow.toISOString().split("T")[0]);
+      }
+    }
+
+    void loadBounds();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setAvailableSlots([]);
+      return;
+    }
+
+    async function loadSlots() {
+      setSlotsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/booking/availability?date=${encodeURIComponent(selectedDate)}`
+        );
+        const data = (await res.json()) as { slots?: string[] };
+        setAvailableSlots(data.slots ?? []);
+      } catch {
+        setAvailableSlots([]);
+      } finally {
+        setSlotsLoading(false);
+      }
+    }
+
+    void loadSlots();
+  }, [selectedDate]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -62,6 +119,14 @@ export function BookingForm() {
       ...Object.fromEntries(formData.entries()),
       consent: formData.get("consent") === "true",
     };
+
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      setErrors(zodErrorsToFieldRecord(parsed.error.issues));
+      setStatus("error");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/booking", {
@@ -80,6 +145,8 @@ export function BookingForm() {
       }
 
       setStatus("success");
+      setSelectedDate("");
+      setAvailableSlots([]);
       (e.target as HTMLFormElement).reset();
     } catch {
       setErrorMessage(tCommon("networkError"));
@@ -140,9 +207,10 @@ export function BookingForm() {
               name="date"
               type="date"
               label={t("date.label")}
-              min={minDate}
+              min={minDate || undefined}
               required
               error={errors.date}
+              onChange={(e) => setSelectedDate(e.target.value)}
             />
             <Select
               id="booking-time"
@@ -150,8 +218,12 @@ export function BookingForm() {
               label={t("time.label")}
               options={timeOptions}
               required
+              disabled={!selectedDate || slotsLoading || availableSlots.length === 0}
               error={errors.time}
             />
+            {selectedDate && !slotsLoading && availableSlots.length === 0 && (
+              <p className="text-sm text-white/50 -mt-3">{t("time.noSlots")}</p>
+            )}
           </div>
 
           <Select

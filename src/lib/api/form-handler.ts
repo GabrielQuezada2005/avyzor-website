@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendEmail, type SendEmailResult } from "@/lib/resend";
-import { isFormBackendReady } from "@/lib/env";
+import { isResendConfigured, isSupabaseConfigured } from "@/lib/env";
 import {
   ServiceUnavailableError,
   PersistenceError,
@@ -24,7 +24,14 @@ interface FormSubmissionOptions {
 }
 
 export function assertFormBackendReady(): void {
-  if (!isFormBackendReady()) {
+  if (!isSupabaseConfigured()) {
+    throw new ServiceUnavailableError();
+  }
+}
+
+export function assertEmailBackendReady(): void {
+  assertFormBackendReady();
+  if (!isResendConfigured()) {
     throw new ServiceUnavailableError();
   }
 }
@@ -48,6 +55,11 @@ export async function persistRecord({
 export async function deliverEmails(
   emails: FormSubmissionOptions["emails"]
 ): Promise<void> {
+  if (!isResendConfigured()) {
+    console.info("[forms] Resend nicht konfiguriert – E-Mail-Versand übersprungen");
+    return;
+  }
+
   const results: SendEmailResult[] = await Promise.all(
     emails.map((email) => sendEmail(email))
   );

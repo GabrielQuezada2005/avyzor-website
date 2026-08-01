@@ -1,0 +1,22 @@
+{
+  "name": "AVYZOR – Premium KI-Agentur",
+  "short_name": "AVYZOR",
+  "description": "Premium-Websites, KI-Chatbots und Automatisierungen für Unternehmen.",
+  "start_url": "/de",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

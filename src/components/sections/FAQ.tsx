@@ -33,7 +33,7 @@ export function FAQ() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
                 className="glass rounded-xl overflow-hidden"
               >
                 <button

@@ -10,11 +10,14 @@ import {
 import {
   DEFAULT_ELEVENLABS_VOICE_BY_LANG,
   ELEVENLABS_TTS_VOICES,
+  resolveElevenLabsVoice,
 } from "@/lib/assistant/tts/elevenlabs-voices";
 import {
   DEFAULT_OPENAI_VOICE_BY_LANG,
   OPENAI_TTS_VOICES,
+  resolveOpenAiVoice,
 } from "@/lib/assistant/tts/openai-voices";
+import { logTtsDebugReport } from "@/lib/assistant/tts/tts-debug-log";
 import { ttsRequestSchema } from "@/lib/assistant/tts/validation";
 import {
   getElevenLabsModelId,
@@ -156,6 +159,31 @@ export async function POST(request: NextRequest) {
     }
 
     if (audio instanceof ReadableStream) {
+      const voiceId =
+        usedProvider === "elevenlabs"
+          ? resolveElevenLabsVoice(resolvedVoiceUri ?? null, lang ?? "de-DE")
+          : resolveOpenAiVoice(resolvedVoiceUri ?? null, lang ?? "de-DE");
+      const model =
+        usedProvider === "elevenlabs"
+          ? getElevenLabsModelId()
+          : getOpenAITtsModel();
+
+      logTtsDebugReport({
+        ttsProvider: usedProvider,
+        voiceId,
+        model,
+        responseStatus: 200,
+        audioSource:
+          usedProvider === "elevenlabs" ? "ElevenLabs API" : "OpenAI API",
+        requestUrl: `${request.nextUrl.origin}/api/assistant/tts`,
+        responseHeaders: {
+          "Content-Type": "audio/mpeg",
+          "X-TTS-Provider": usedProvider,
+          "Transfer-Encoding": "chunked",
+        },
+        phase: "server",
+      });
+
       return new NextResponse(audio, {
         status: 200,
         headers: {
@@ -167,6 +195,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    logTtsDebugReport({
+      ttsProvider: usedProvider,
+      voiceId:
+        usedProvider === "elevenlabs"
+          ? resolveElevenLabsVoice(resolvedVoiceUri ?? null, lang ?? "de-DE")
+          : resolveOpenAiVoice(resolvedVoiceUri ?? null, lang ?? "de-DE"),
+      model:
+        usedProvider === "elevenlabs"
+          ? getElevenLabsModelId()
+          : getOpenAITtsModel(),
+      responseStatus: 200,
+      audioSource:
+        usedProvider === "elevenlabs" ? "ElevenLabs API" : "OpenAI API",
+      requestUrl: `${request.nextUrl.origin}/api/assistant/tts`,
+      responseHeaders: {
+        "Content-Type": "audio/mpeg",
+        "X-TTS-Provider": usedProvider,
+      },
+      phase: "server",
+    });
+
     return new NextResponse(new Uint8Array(audio), {
       status: 200,
       headers: {
@@ -177,6 +226,16 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof TtsServiceError) {
+      logTtsDebugReport({
+        ttsProvider: activeProvider ?? "unknown",
+        voiceId: "N/A",
+        model: "N/A",
+        responseStatus: error.status,
+        audioSource: "none (TtsServiceError)",
+        requestUrl: `${request.nextUrl.origin}/api/assistant/tts`,
+        phase: "server-error",
+      });
+
       return NextResponse.json(
         { success: false, error: error.message, code: error.code },
         { status: error.status }

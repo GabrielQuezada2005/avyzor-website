@@ -5,7 +5,12 @@ import {
   rateLimitResponse,
 } from "@/lib/api/security";
 import { AssistantServiceError } from "@/lib/assistant/errors";
+import {
+  formatLeadProfileForDisplay,
+  processLeadDetection,
+} from "@/lib/assistant/lead-detection";
 import { runAssistantPipeline } from "@/lib/assistant/pipeline";
+import { syncDetectedLeadToCrm } from "@/lib/crm/sync-lead.server";
 import { generateOpenAIResponse } from "@/lib/assistant/openai";
 import {
   assistantRequestSchema,
@@ -87,6 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     let leadBehaviorPrompt: string | undefined;
+    let leadProfile;
 
     if (sessionId) {
       const pipeline = runAssistantPipeline(sessionId, messages);
@@ -94,6 +100,15 @@ export async function POST(request: NextRequest) {
       for (const line of pipeline.logs) {
         console.info(line);
       }
+
+      const leadRecord = processLeadDetection(sessionId, messages);
+      leadProfile = formatLeadProfileForDisplay(leadRecord);
+      console.info(
+        "[lead-detection]",
+        JSON.stringify(leadProfile, null, 2)
+      );
+
+      await syncDetectedLeadToCrm(leadRecord);
     }
 
     const message = await generateOpenAIResponse(messages, {
@@ -101,7 +116,7 @@ export async function POST(request: NextRequest) {
       locale,
     });
 
-    return NextResponse.json({ success: true, message });
+    return NextResponse.json({ success: true, message, lead: leadProfile ?? null });
   } catch (error) {
     return handleAssistantError(error);
   }

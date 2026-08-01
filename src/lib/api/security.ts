@@ -1,9 +1,38 @@
 import { NextRequest } from "next/server";
 
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+export type RateLimitProfile = "default" | "auth" | "strict";
 
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 10;
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+interface RateLimitConfig {
+  windowMs: number;
+  maxRequests: number;
+}
+
+const RATE_LIMIT_PROFILES: Record<RateLimitProfile, RateLimitConfig> = {
+  default: { windowMs: 60_000, maxRequests: 10 },
+  auth: { windowMs: 15 * 60_000, maxRequests: 5 },
+  strict: { windowMs: 60_000, maxRequests: 3 },
+};
+
+/** In-Memory Store – für Vercel Serverless durch Upstash/KV ersetzbar. */
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+let cleanupCounter = 0;
+
+function cleanupExpiredEntries(now: number): void {
+  cleanupCounter += 1;
+  if (cleanupCounter % 100 !== 0) return;
+
+  rateLimitStore.forEach((entry, key) => {
+    if (now > entry.resetAt) {
+      rateLimitStore.delete(key);
+    }
+  });
+}
 
 export function getClientIp(request: NextRequest): string {
   return (
@@ -13,17 +42,26 @@ export function getClientIp(request: NextRequest): string {
   );
 }
 
-export function checkRateLimit(request: NextRequest): boolean {
+export function checkRateLimit(
+  request: NextRequest,
+  profile: RateLimitProfile = "default",
+  keySuffix?: string
+): boolean {
+  const config = RATE_LIMIT_PROFILES[profile];
   const ip = getClientIp(request);
+  const key = `${profile}:${keySuffix ?? ip}`;
   const now = Date.now();
-  const entry = rateLimitStore.get(ip);
+
+  cleanupExpiredEntries(now);
+
+  const entry = rateLimitStore.get(key);
 
   if (!entry || now > entry.resetAt) {
-    rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    rateLimitStore.set(key, { count: 1, resetAt: now + config.windowMs });
     return true;
   }
 
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+  if (entry.count >= config.maxRequests) {
     return false;
   }
 
@@ -45,4 +83,10 @@ export function rateLimitResponse() {
     },
     { status: 429 }
   );
+}
+
+/** Prüft, ob Debug-Endpunkte in Production erlaubt sind. */
+export function isDebugEndpointEnabled(): boolean {
+  if (process.env.NODE_ENV !== "production") return true;
+  return process.env.ENABLE_DEBUG_ENDPOINTS === "true";
 }

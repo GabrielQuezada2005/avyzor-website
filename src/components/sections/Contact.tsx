@@ -63,6 +63,7 @@ export function Contact() {
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
             className="lg:col-span-2"
           >
             <div
@@ -126,6 +127,7 @@ export function Contact() {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
             className="space-y-6"
           >
             <div className="glass rounded-2xl p-6">

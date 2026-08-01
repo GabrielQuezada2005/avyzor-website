@@ -7,6 +7,7 @@ import {
   getOpenAIModel,
   isOpenAIConfigured,
 } from "@/lib/env.server";
+import { getAssistantKnowledgeContext } from "@/lib/rag/get-assistant-knowledge-context.server";
 import { AssistantServiceError } from "./errors";
 import { buildLocaleInstruction } from "./locale-prompt";
 import { buildAssistantSystemPrompt } from "./system-prompt";
@@ -60,9 +61,12 @@ export async function generateOpenAIResponse(
   const model = getOpenAIModel();
   const maxTokens = getOpenAIMaxTokens();
 
+  const knowledgeContext = await getAssistantKnowledgeContext(options?.locale);
+
   const systemPrompt = [
     options?.locale ? buildLocaleInstruction(options.locale) : undefined,
     buildAssistantSystemPrompt(),
+    knowledgeContext,
     options?.leadBehaviorPrompt,
   ]
     .filter(Boolean)

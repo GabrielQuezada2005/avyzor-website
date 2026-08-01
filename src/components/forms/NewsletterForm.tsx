@@ -1,21 +1,41 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useMemo, useState, type FormEvent } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
+import {
+  createNewsletterFormSchema,
+  zodErrorsToFieldRecord,
+} from "@/lib/i18n/form-schemas.client";
 import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 
 export function NewsletterForm() {
+  const locale = useLocale();
   const t = useTranslations("forms.newsletter");
   const tCommon = useTranslations("forms.common");
+  const tValidation = useTranslations("forms.validation");
 
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const schema = useMemo(
+    () =>
+      createNewsletterFormSchema({
+        nameMin: tValidation("nameMin"),
+        emailInvalid: tValidation("emailInvalid"),
+        messageMin: tValidation("messageMin"),
+        serviceRequired: tValidation("serviceRequired"),
+        dateRequired: tValidation("dateRequired"),
+        timeRequired: tValidation("timeRequired"),
+        consentRequired: tValidation("consentRequired"),
+      }),
+    [tValidation]
+  );
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,7 +49,16 @@ export function NewsletterForm() {
       email: formData.get("email") as string,
       consent: formData.get("consent") === "true",
       website: formData.get("website") as string,
+      locale,
     };
+
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      setErrors(zodErrorsToFieldRecord(parsed.error.issues));
+      setStatus("error");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/newsletter", {

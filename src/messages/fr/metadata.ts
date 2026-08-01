@@ -13,5 +13,13 @@ export default {
     "Prise de rendez-vous",
     "Agence Digitale"
   ],
-  "ogImageAlt": "AVYZOR – Agence Premium IA"
+  "ogImageAlt": "AVYZOR – Agence Premium IA",
+  "jsonLd": {
+    "serviceTypes": [
+      "Développement de sites web premium",
+      "Développement de chatbots IA",
+      "Automatisation d'entreprise",
+      "Services SEO"
+    ]
+  }
 };

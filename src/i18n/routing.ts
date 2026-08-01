@@ -11,6 +11,8 @@ import {
   localeToIntl,
   localeToOg,
   locales,
+  LOCALE_COOKIE_MAX_AGE,
+  LOCALE_COOKIE_NAME,
   type Locale,
 } from "./locale-config";
 
@@ -27,4 +29,9 @@ export const routing = defineRouting({
   locales: [...locales],
   defaultLocale,
   localePrefix: "always",
+  localeDetection: true,
+  localeCookie: {
+    name: LOCALE_COOKIE_NAME,
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+  },
 });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { buildLocalizedPageMetadata } from "@/lib/seo";
 import { AlertCircle } from "lucide-react";
 import { NEWSLETTER_ERROR_REASONS } from "@/lib/i18n/structures";
 import type { Locale } from "@/i18n/routing";
@@ -12,11 +13,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "newsletter.error" });
 
-  return {
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/newsletter/fehler",
     title: t("metaTitle"),
     description: t("metaDescription"),
     robots: { index: false, follow: false },
-  };
+  });
 }
 
 export default async function NewsletterErrorPage({

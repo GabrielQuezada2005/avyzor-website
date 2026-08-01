@@ -1,27 +1,26 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { SITE_CONFIG } from "@/lib/constants";
-
-const staticPaths = ["", "/impressum", "/datenschutz"] as const;
+import {
+  buildLanguageAlternates,
+  SITEMAP_LEGAL_LAST_MODIFIED,
+  SITEMAP_PUBLIC_PATHS,
+} from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  const homepageLastModified = new Date();
   const entries: MetadataRoute.Sitemap = [];
 
   for (const locale of routing.locales) {
-    for (const path of staticPaths) {
+    for (const route of SITEMAP_PUBLIC_PATHS) {
       entries.push({
-        url: `${SITE_CONFIG.url}/${locale}${path}`,
-        lastModified,
-        changeFrequency: path === "" ? "weekly" : "yearly",
-        priority: path === "" ? 1 : 0.3,
+        url: `${SITE_CONFIG.url}/${locale}${route.path}`,
+        lastModified:
+          route.path === "" ? homepageLastModified : SITEMAP_LEGAL_LAST_MODIFIED,
+        changeFrequency: route.changeFrequency,
+        priority: route.priority,
         alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [
-              loc,
-              `${SITE_CONFIG.url}/${loc}${path}`,
-            ])
-          ),
+          languages: buildLanguageAlternates(route.path),
         },
       });
     }

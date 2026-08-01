@@ -103,3 +103,109 @@ export function resolveTtsFallbackProvider(
 export function isCloudTtsConfigured(): boolean {
   return resolveActiveTtsProvider() !== null;
 }
+
+// ── CRM Admin ───────────────────────────────────────────────────────────────
+
+export function getCrmAdminSecret(): string {
+  return readEnv("CRM_ADMIN_SECRET");
+}
+
+export function isCrmAdminConfigured(): boolean {
+  return !isPlaceholder(getCrmAdminSecret());
+}
+
+// ── Kundenportal Auth ───────────────────────────────────────────────────────
+
+export function getPortalAuthSecret(): string {
+  return readEnv("PORTAL_AUTH_SECRET");
+}
+
+export function isPortalAuthConfigured(): boolean {
+  return !isPlaceholder(getPortalAuthSecret());
+}
+
+// ── Stripe ──────────────────────────────────────────────────────────────────
+
+export function getStripeSecretKey(): string {
+  return readEnv("STRIPE_SECRET_KEY");
+}
+
+export function isStripeConfigured(): boolean {
+  const key = getStripeSecretKey();
+  return Boolean(
+    key &&
+      !key.includes("your_key") &&
+      !key.startsWith("sk_your") &&
+      !isPlaceholder(key)
+  );
+}
+
+export function getStripeWebhookSecret(): string {
+  return readEnv("STRIPE_WEBHOOK_SECRET");
+}
+
+export function isStripeWebhookConfigured(): boolean {
+  return !isPlaceholder(getStripeWebhookSecret());
+}
+
+// ── Production ──────────────────────────────────────────────────────────────
+
+export function isProductionRuntime(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
+export interface ProductionEnvCheck {
+  ok: boolean;
+  missing: string[];
+  warnings: string[];
+}
+
+/** Prüft kritische Env-Variablen für Production-Deployments. */
+export function checkProductionEnvironment(): ProductionEnvCheck {
+  const missing: string[] = [];
+  const warnings: string[] = [];
+
+  if (!isProductionRuntime()) {
+    return { ok: true, missing, warnings };
+  }
+
+  const required = [
+    "NEXT_PUBLIC_SITE_URL",
+    "CRM_ADMIN_SECRET",
+    "PORTAL_AUTH_SECRET",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "RESEND_API_KEY",
+  ];
+
+  for (const name of required) {
+    const value = readEnv(name);
+    if (isPlaceholder(value)) {
+      missing.push(name);
+    }
+  }
+
+  if (!isOpenAIConfigured() && !isElevenLabsTtsConfigured()) {
+    warnings.push("Kein TTS-Anbieter konfiguriert (Assistant ohne Sprache).");
+  }
+
+  if (!isStripeConfigured()) {
+    warnings.push("Stripe nicht konfiguriert (Online-Zahlungen deaktiviert).");
+  }
+
+  if (!isTurnstileConfigured()) {
+    warnings.push("Turnstile nicht konfiguriert (Spam-Schutz nur via Honeypot).");
+  }
+
+  return {
+    ok: missing.length === 0,
+    missing,
+    warnings,
+  };
+}
+
+function isTurnstileConfigured(): boolean {
+  const secret = readEnv("TURNSTILE_SECRET_KEY");
+  const siteKey = readEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY");
+  return Boolean(secret && siteKey && !isPlaceholder(secret));
+}

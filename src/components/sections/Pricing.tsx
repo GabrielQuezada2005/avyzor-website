@@ -30,7 +30,7 @@ export function Pricing() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, locale }),
       });
       const data = await res.json();
 
@@ -138,7 +138,7 @@ export function Pricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative rounded-2xl p-8 transition-all duration-500 ${
+                className={`relative rounded-2xl p-8 transition-all duration-300 ${
                   highlighted
                     ? "glass-gold shadow-gold scale-[1.02] lg:scale-105"
                     : "glass hover:border-gold-500/20"

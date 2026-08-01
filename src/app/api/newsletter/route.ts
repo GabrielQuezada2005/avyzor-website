@@ -9,8 +9,10 @@ import {
 } from "@/lib/resend";
 import { newsletterSchema } from "@/lib/validations";
 import { env } from "@/lib/env";
+import { resolveNewsletterLocale } from "@/lib/i18n/newsletter-urls";
 import {
   assertFormBackendReady,
+  assertEmailBackendReady,
   handleApiError,
   validationErrorResponse,
   zodErrorsToRecord,
@@ -41,11 +43,12 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse(zodErrorsToRecord(result.error.errors));
     }
 
-    const { email } = result.data;
-    assertFormBackendReady();
+    const { email, locale: requestLocale } = result.data;
+    assertEmailBackendReady();
 
     const token = randomUUID();
-    const confirmUrl = `${env.siteUrl}/api/newsletter/confirm?token=${token}`;
+    const locale = resolveNewsletterLocale(requestLocale);
+    const confirmUrl = `${env.siteUrl}/api/newsletter/confirm?token=${token}&locale=${locale}`;
 
     if (!supabaseAdmin) {
       throw new PersistenceError();

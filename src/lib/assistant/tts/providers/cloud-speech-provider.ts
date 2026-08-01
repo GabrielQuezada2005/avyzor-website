@@ -13,6 +13,11 @@ import {
   playStreamingAudioResponse,
   type StreamAudioHandle,
 } from "../stream-audio-playback";
+import {
+  headersToRecord,
+  logTtsDebugClient,
+} from "../tts-debug-log";
+import { fromElevenLabsVoiceUri } from "../elevenlabs-voices";
 import type {
   SpeakOptions,
   SpeechPlaybackState,
@@ -113,6 +118,45 @@ export class CloudSpeechProvider implements TtsProvider {
     this.audioHandle = null;
   }
 
+  private resolveVoiceIdForLog(
+    provider: "openai" | "elevenlabs",
+    voiceUri: string | null | undefined,
+    lang: string
+  ): string {
+    if (provider === "elevenlabs") {
+      const fromUri = fromElevenLabsVoiceUri(voiceUri ?? null);
+      if (fromUri) return fromUri;
+      return this.status?.defaultVoice ?? "onwK4e9ZLuTAKqWW03F9";
+    }
+    return voiceUri?.replace(/^openai:/, "") ?? this.status?.defaultVoice ?? "unknown";
+  }
+
+  private logClientTtsDebug(
+    response: Response,
+    payload: TtsRequestPayload,
+    audioSource: string
+  ): void {
+    const usedProvider =
+      response.headers.get("X-TTS-Provider") ?? payload.provider;
+    const providerForVoice =
+      usedProvider === "openai" ? "openai" : "elevenlabs";
+
+    logTtsDebugClient({
+      ttsProvider: usedProvider,
+      voiceId: this.resolveVoiceIdForLog(
+        providerForVoice,
+        payload.voiceUri,
+        payload.lang
+      ),
+      model: this.status?.model ?? "unknown",
+      responseStatus: response.status,
+      audioSource,
+      requestUrl: response.url || `${window.location.origin}/api/assistant/tts`,
+      responseHeaders: headersToRecord(response.headers),
+      phase: "client",
+    });
+  }
+
   private async requestTts(payload: TtsRequestPayload): Promise<Response> {
     const body: Record<string, unknown> = {
       text: payload.text,
@@ -203,13 +247,21 @@ export class CloudSpeechProvider implements TtsProvider {
       }
 
       if (!response.ok) {
+        this.logClientTtsDebug(response, payload, "none (HTTP error → Browser-Fallback)");
         await this.fallbackToBrowser(options);
         return;
       }
 
       const played = await this.playResponse(response, options, volume);
       if (!played) {
+        this.logClientTtsDebug(
+          response,
+          payload,
+          "none (Playback failed → Browser-Fallback)"
+        );
         await this.fallbackToBrowser(options);
+      } else {
+        this.logClientTtsDebug(response, payload, "Cloud TTS (HTMLAudioElement / MP3)");
       }
     } catch {
       await this.fallbackToBrowser(options);
@@ -219,6 +271,15 @@ export class CloudSpeechProvider implements TtsProvider {
   private async fallbackToBrowser(options: SpeakOptions): Promise<void> {
     this.cleanupAudio();
     this.setState("idle", null);
+    logTtsDebugClient({
+      ttsProvider: "browser",
+      voiceId: "N/A (Browser SpeechSynthesis)",
+      model: "SpeechSynthesis",
+      responseStatus: "N/A (no HTTP TTS request)",
+      audioSource: "Browser SpeechSynthesis",
+      requestUrl: "N/A",
+      phase: "client-fallback",
+    });
     await getBrowserSpeechProvider().speak(options);
   }
 

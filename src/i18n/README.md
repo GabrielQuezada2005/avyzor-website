@@ -13,12 +13,10 @@ Die Website nutzt [next-intl](https://next-intl-docs.vercel.app/) mit locale-pr�
 | `es`   | `/es` | Spanisch     |
 | `fr`   | `/fr` | Französisch  |
 | `it`   | `/it` | Italienisch  |
-| `ru`   | `/ru` | Russisch     |
-| `tr`   | `/tr` | Türkisch     |
-| `pt`   | `/pt` | Portugiesisch|
-| `nl`   | `/nl` | Niederländisch |
 
 Standard-Locale: **de** (Redirect von `/` → `/de`)
+
+Die Sprachwahl wird per Cookie (`NEXT_LOCALE`, 365 Tage) gespeichert.
 
 ## Architektur
 
@@ -34,6 +32,8 @@ src/
 │   ├── index.ts         # getMessages(locale) – lazy Import
 │   └── {locale}/        # 22 Namespaces pro Sprache
 ├── lib/i18n/
+│   ├── namespaces.ts    # Pflicht-Namespaces pro Locale
+│   ├── form-schemas.client.ts # Client-Validierung mit übersetzten Meldungen
 │   ├── structures.ts    # IDs, Icons, Hrefs (nicht übersetzt)
 │   ├── pricing-data.ts  # Feste Preise in EUR
 │   └── format.ts        # formatPrice, formatTime (Intl)
@@ -69,6 +69,16 @@ src/
 1. Eintrag in `src/i18n/locale-config.ts` → `LOCALE_DEFINITIONS` ergänzen
 2. Ordner `src/messages/{locale}/` mit allen 22 Namespace-Dateien anlegen (Struktur wie `de/`)
 3. Fertig — Routing, Middleware, Sitemap, LanguageSwitcher und Message-Loader übernehmen die Sprache automatisch
+
+Optional: Vorhandene Übersetzungen in `src/messages/{locale}/` (z. B. `ru`, `pt`) können reaktiviert werden, indem der Eintrag wieder in `LOCALE_DEFINITIONS` ergänzt wird.
+
+## Validierung
+
+```bash
+npm run verify:i18n
+```
+
+Prüft für alle aktiven Locales, dass jede Namespace-Datei existiert und die Schlüssel mit der Referenz-Locale (`de`) übereinstimmen.
 
 ## SEO
 

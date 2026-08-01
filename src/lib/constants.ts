@@ -1,45 +1,35 @@
-import { env } from "@/lib/env";
+import { publicEnv } from "@/lib/env.public";
 
 export const SITE_CONFIG = {
-  name: env.site.name,
-  title: `${env.site.name} – Premium KI-Agentur`,
+  name: publicEnv.site.name,
+  title: `${publicEnv.site.name} – Premium KI-Agentur`,
   description:
     "AVYZOR entwickelt Premium-Websites, KI-Chatbots und Automatisierungen für Unternehmen, die Exzellenz erwarten. Ihre KI-Agentur für digitale Transformation auf höchstem Niveau.",
-  url: env.siteUrl,
-  email: env.site.email,
-  phone: env.site.phone,
-  phoneHref: env.site.phoneHref,
-  whatsapp: env.site.whatsapp || "491234567890",
-  calendly: env.calendly || "https://calendly.com/avyzor",
+  url: publicEnv.siteUrl,
+  email: publicEnv.site.email,
+  phone: publicEnv.site.phone,
+  phoneHref: publicEnv.site.phoneHref,
+  whatsapp: publicEnv.site.whatsapp || "491234567890",
+  calendly: publicEnv.calendly || "https://calendly.com/avyzor",
   address: {
-    street: env.site.addressStreet,
-    city: env.site.addressCity,
-    zip: env.site.addressZip,
-    country: env.site.addressCountry,
+    street: publicEnv.site.addressStreet,
+    city: publicEnv.site.addressCity,
+    zip: publicEnv.site.addressZip,
+    country: publicEnv.site.addressCountry,
   },
   legal: {
-    name: env.site.legalName || env.site.name,
-    representative: env.site.legalRepresentative,
-    vatId: env.site.vatId,
-    registerCourt: env.site.registerCourt,
-    registerNumber: env.site.registerNumber,
+    name: publicEnv.site.legalName || publicEnv.site.name,
+    representative: publicEnv.site.legalRepresentative,
+    vatId: publicEnv.site.vatId,
+    registerCourt: publicEnv.site.registerCourt,
+    registerNumber: publicEnv.site.registerNumber,
   },
   social: {
-    linkedin: env.site.linkedin,
-    instagram: env.site.instagram,
-    twitter: env.site.twitter,
+    linkedin: publicEnv.site.linkedin,
+    instagram: publicEnv.site.instagram,
+    twitter: publicEnv.site.twitter,
   },
 } as const;
-
-export const NAV_LINKS = [
-  { href: "/#leistungen", label: "Leistungen" },
-  { href: "/#preise", label: "Preise" },
-  { href: "/#warum-avyzor", label: "Warum AVYZOR" },
-  { href: "/#portfolio", label: "Portfolio" },
-  { href: "/#bewertungen", label: "Bewertungen" },
-  { href: "/#faq", label: "FAQ" },
-  { href: "/#kontakt", label: "Kontakt" },
-] as const;
 
 export const SERVICES = [
   {

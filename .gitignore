@@ -6,6 +6,10 @@
 
 # testing
 /coverage
+/tests/reports/*
+!/tests/reports/.gitkeep
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -17,6 +21,7 @@
 # misc
 .DS_Store
 *.pem
+.repro-test-logs/
 
 # debug
 npm-debug.log*

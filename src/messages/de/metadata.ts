@@ -15,4 +15,12 @@ export default {
     "Digital Agentur",
   ],
   ogImageAlt: "AVYZOR – Premium KI-Agentur",
+  jsonLd: {
+    serviceTypes: [
+      "Premium Website Entwicklung",
+      "KI-Chatbot Entwicklung",
+      "Business Automatisierung",
+      "SEO Services",
+    ],
+  },
 };

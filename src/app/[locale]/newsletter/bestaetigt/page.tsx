@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { buildLocalizedPageMetadata } from "@/lib/seo";
 import { CheckCircle } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
 
@@ -11,11 +12,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "newsletter.confirmed" });
 
-  return {
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/newsletter/bestaetigt",
     title: t("metaTitle"),
     description: t("metaDescription"),
     robots: { index: false, follow: false },
-  };
+  });
 }
 
 export default async function NewsletterConfirmedPage() {

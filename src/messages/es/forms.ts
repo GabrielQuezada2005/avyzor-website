@@ -92,7 +92,8 @@ export default {
     "time": {
       "label": "Hora *",
       "placeholder": "Seleccionar hora *",
-      "suffix": "h"
+      "suffix": "h",
+      "noSlots": "No hay citas disponibles. Elija otra fecha."
     },
     "service": {
       "label": "Tipo de consulta",
@@ -125,5 +126,14 @@ export default {
     "genericError": "Algo salió mal. Inténtelo de nuevo.",
     "required": "Campo obligatorio",
     "sending": "Enviando…"
+  },
+  "validation": {
+    "nameMin": "El nombre debe tener al menos 2 caracteres.",
+    "emailInvalid": "Dirección de correo no válida.",
+    "messageMin": "El mensaje debe tener al menos 10 caracteres.",
+    "serviceRequired": "Seleccione un servicio.",
+    "dateRequired": "Seleccione una fecha.",
+    "timeRequired": "Seleccione una hora.",
+    "consentRequired": "Acepte la política de privacidad."
   }
 };

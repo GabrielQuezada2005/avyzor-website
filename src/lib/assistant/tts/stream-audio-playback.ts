@@ -1,16 +1,14 @@
 /**
- * Client-seitige Streaming-Wiedergabe für Cloud-TTS-Antworten.
+ * Client-seitige Wiedergabe für Cloud-TTS-Antworten.
  *
- * Nutzt MediaSource (niedrige Latenz) mit Blob-Fallback.
+ * Lädt den HTTP-Stream vollständig, spielt dann als Blob ab.
+ * Wartet auf canplay, damit der erste MP3-Frame dekodiert ist.
  */
 
 export interface StreamAudioHandle {
   audio: HTMLAudioElement;
   objectUrl: string;
 }
-
-/** Mindestpuffer vor Start – verhindert Underruns, kein Chunk-zu-Chunk-Delay. */
-const PREBUFFER_BYTES = 6_144;
 
 export async function playStreamingAudioResponse(
   response: Response,
@@ -22,69 +20,7 @@ export async function playStreamingAudioResponse(
   }
 
   const contentType = response.headers.get("Content-Type") ?? "audio/mpeg";
-
-  if (
-    typeof MediaSource !== "undefined" &&
-    MediaSource.isTypeSupported(contentType)
-  ) {
-    try {
-      return await playWithMediaSource(response, volume, onPlaying, contentType);
-    } catch {
-      // Fallback bei MSE-Fehlern
-    }
-  }
-
-  return playWithBlob(response, volume, onPlaying);
-}
-
-async function playWithBlob(
-  response: Response,
-  volume: number,
-  onPlaying: () => void
-): Promise<StreamAudioHandle> {
-  const blob = await response.blob();
-  const objectUrl = URL.createObjectURL(blob);
-  const audio = new Audio(objectUrl);
-  audio.volume = volume;
-  audio.onplay = onPlaying;
-  await audio.play();
-  return { audio, objectUrl };
-}
-
-async function playWithMediaSource(
-  response: Response,
-  volume: number,
-  onPlaying: () => void,
-  contentType: string
-): Promise<StreamAudioHandle> {
-  const mediaSource = new MediaSource();
-  const objectUrl = URL.createObjectURL(mediaSource);
-  const audio = new Audio(objectUrl);
-  audio.volume = volume;
-  audio.preload = "auto";
-
-  const sourceOpen = new Promise<void>((resolve, reject) => {
-    mediaSource.addEventListener(
-      "sourceopen",
-      () => {
-        void appendStreamToMediaSource(
-          mediaSource,
-          response.body!,
-          audio,
-          onPlaying
-        )
-          .then(resolve)
-          .catch(reject);
-      },
-      { once: true }
-    );
-    mediaSource.addEventListener("error", () => reject(new Error("MediaSource error")), {
-      once: true,
-    });
-  });
-
-  await sourceOpen;
-  return { audio, objectUrl };
+  return playWithStreamedBlob(response, volume, onPlaying, contentType);
 }
 
 function concatChunks(chunks: Uint8Array[], totalLength: number): Uint8Array {
@@ -97,68 +33,66 @@ function concatChunks(chunks: Uint8Array[], totalLength: number): Uint8Array {
   return merged;
 }
 
-async function appendStreamToMediaSource(
-  mediaSource: MediaSource,
-  body: ReadableStream<Uint8Array>,
-  audio: HTMLAudioElement,
-  onPlaying: () => void
-): Promise<void> {
-  const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-  if (sourceBuffer.mode !== "sequence") {
-    sourceBuffer.mode = "sequence";
-  }
-
+async function readResponseBody(
+  body: ReadableStream<Uint8Array>
+): Promise<Uint8Array> {
   const reader = body.getReader();
-  let started = false;
-  let pendingChunks: Uint8Array[] = [];
-  let pendingBytes = 0;
-
-  const waitForUpdate = (): Promise<void> =>
-    sourceBuffer.updating
-      ? new Promise((resolve) =>
-          sourceBuffer.addEventListener("updateend", () => resolve(), {
-            once: true,
-          })
-        )
-      : Promise.resolve();
-
-  const flushPending = async (): Promise<void> => {
-    if (pendingBytes === 0) return;
-
-    const merged = concatChunks(pendingChunks, pendingBytes);
-    pendingChunks = [];
-    pendingBytes = 0;
-
-    await waitForUpdate();
-    sourceBuffer.appendBuffer(new Uint8Array(merged));
-
-    if (!started) {
-      started = true;
-      audio.onplay = onPlaying;
-      await audio.play();
-    }
-  };
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) {
-      await flushPending();
-      break;
-    }
+    if (done) break;
     if (!value?.length) continue;
-
-    pendingChunks.push(value);
-    pendingBytes += value.length;
-
-    if (started || pendingBytes >= PREBUFFER_BYTES) {
-      await flushPending();
-    }
+    chunks.push(value);
+    totalLength += value.length;
   }
 
-  await waitForUpdate();
-  if (mediaSource.readyState === "open") {
-    mediaSource.endOfStream();
+  return concatChunks(chunks, totalLength);
+}
+
+/**
+ * Wartet bis genug Audio dekodiert ist (canplay), nicht nur Metadaten (loadeddata).
+ * loadeddata allein reichte nicht – play() startete vor dem ersten hörbaren Frame.
+ */
+async function waitForPlaybackReady(audio: HTMLAudioElement): Promise<void> {
+  if (audio.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) return;
+
+  await new Promise<void>((resolve, reject) => {
+    audio.addEventListener("canplay", () => resolve(), { once: true });
+    audio.addEventListener(
+      "error",
+      () => reject(new Error("Audio decode error")),
+      { once: true }
+    );
+  });
+}
+
+async function playWithStreamedBlob(
+  response: Response,
+  volume: number,
+  onPlaying: () => void,
+  contentType: string
+): Promise<StreamAudioHandle> {
+  const audioBytes = await readResponseBody(response.body!);
+  if (audioBytes.length === 0) {
+    throw new Error("Empty TTS audio stream");
   }
+
+  const blob = new Blob([Uint8Array.from(audioBytes)], { type: contentType });
+  const objectUrl = URL.createObjectURL(blob);
+  const audio = new Audio();
+  audio.volume = volume;
+  audio.preload = "auto";
+  audio.src = objectUrl;
+
+  audio.load();
+  await waitForPlaybackReady(audio);
+  audio.currentTime = 0;
+  audio.onplay = onPlaying;
+  await audio.play();
+
+  return { audio, objectUrl };
 }
 
 export function cleanupStreamAudio(handle: StreamAudioHandle | null): void {

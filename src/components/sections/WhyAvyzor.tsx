@@ -29,7 +29,7 @@ export function WhyAvyzor() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex gap-6 p-6 rounded-2xl glass hover:border-gold-500/20 transition-all duration-500"
+                className="flex gap-6 p-6 rounded-2xl glass hover:border-gold-500/20 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-xl bg-gold-500/10 flex items-center justify-center shrink-0">
                   {Icon && (

@@ -63,7 +63,7 @@ export function useAssistant(options?: UseAssistantOptions): UseAssistantReturn 
     setIsTyping(true);
 
     try {
-      const response = await generateAssistantResponse(
+      const { message: response } = await generateAssistantResponse(
         trimmed,
         conversationHistory,
         sessionIdRef.current,

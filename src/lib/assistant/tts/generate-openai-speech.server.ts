@@ -7,6 +7,8 @@ import {
   isOpenAIConfigured,
 } from "@/lib/env.server";
 import { resolveOpenAiVoice, type OpenAiTtsVoiceId } from "./openai-voices";
+import { applyQuestionProsody } from "./apply-question-prosody";
+import { normalizeSpeechFlow } from "./normalize-speech-flow";
 import { sanitizeTextForSpeech } from "./sanitize-for-speech";
 import { getTtsInstructionsForLang } from "./tts-instructions";
 import { TtsServiceError } from "./tts-service-error";
@@ -39,19 +41,19 @@ export interface GenerateOpenAiSpeechOptions {
   speed?: number;
 }
 
-/** Natürliches Sprechtempo für gpt-4o-mini-tts (leicht unter 1.0 = ruhiger Berater-Ton). */
-const DEFAULT_OPENAI_TTS_SPEED = 0.97;
+/** Flüssiges Sprechtempo (~1.10× bei UI-Standard 1.0, ca. 10 % schneller). */
+const FLUENT_OPENAI_SPEED = 1.1;
+const UI_RATE_BASELINE = 1.0;
 
 function normalizeOpenAiSpeed(speed?: number): number {
-  if (speed === undefined) return DEFAULT_OPENAI_TTS_SPEED;
-  // Legacy-Nutzer mit rate 1.15 (alter Browser-Default) → ruhigeres OpenAI-Tempo
-  if (speed >= 1.12) return 0.97;
-  if (speed >= 1.05) return 0.99;
-  return clampSpeed(speed);
+  const uiRate = speed ?? UI_RATE_BASELINE;
+  return clampSpeed(FLUENT_OPENAI_SPEED * (uiRate / UI_RATE_BASELINE));
 }
 
 function buildSpeechParams(options: GenerateOpenAiSpeechOptions) {
-  const input = sanitizeTextForSpeech(options.text);
+  const sanitized = sanitizeTextForSpeech(options.text);
+  const normalized = normalizeSpeechFlow(sanitized);
+  const input = applyQuestionProsody(normalized, "openai");
   if (!input) {
     throw new TtsServiceError("Kein Text zum Vorlesen.", "EMPTY_TEXT", 400);
   }
@@ -71,7 +73,7 @@ function buildSpeechParams(options: GenerateOpenAiSpeechOptions) {
   };
 
   if (model.includes("gpt-4o-mini-tts")) {
-    params.instructions = getTtsInstructionsForLang(lang);
+    params.instructions = getTtsInstructionsForLang(lang, input);
   }
 
   return params;

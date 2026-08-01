@@ -92,7 +92,8 @@ export default {
     "time": {
       "label": "Heure *",
       "placeholder": "Choisir l'heure *",
-      "suffix": "h"
+      "suffix": "h",
+      "noSlots": "Aucun créneau disponible. Veuillez choisir une autre date."
     },
     "service": {
       "label": "Type de consultation",
@@ -125,5 +126,14 @@ export default {
     "genericError": "Une erreur s'est produite. Veuillez réessayer.",
     "required": "Champ obligatoire",
     "sending": "Envoi en cours…"
+  },
+  "validation": {
+    "nameMin": "Le nom doit comporter au moins 2 caractères.",
+    "emailInvalid": "Adresse e-mail invalide.",
+    "messageMin": "Le message doit comporter au moins 10 caractères.",
+    "serviceRequired": "Veuillez sélectionner un service.",
+    "dateRequired": "Veuillez sélectionner une date.",
+    "timeRequired": "Veuillez sélectionner une heure.",
+    "consentRequired": "Veuillez accepter la politique de confidentialité."
   }
 };

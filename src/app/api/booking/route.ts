@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  contactConfirmationEmail,
-  adminNotificationEmail,
-  EMAIL_TO,
-} from "@/lib/resend";
 import { bookingSchema } from "@/lib/validations";
+import { createWebsiteBooking } from "@/lib/booking/create-booking.server";
+import { isValidBookingDate, isSlotAvailable } from "@/lib/booking";
+import { getBookedTimesForDate } from "@/lib/booking/repository.server";
+import { isSupabaseConfigured } from "@/lib/env";
 import {
-  handleFormSubmission,
-  handleApiError,
   validationErrorResponse,
   zodErrorsToRecord,
 } from "@/lib/api/form-handler";
@@ -16,6 +13,8 @@ import {
   isHoneypotTriggered,
   rateLimitResponse,
 } from "@/lib/api/security";
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   if (!checkRateLimit(request)) {
@@ -35,45 +34,66 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse(zodErrorsToRecord(result.error.errors));
     }
 
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Terminbuchung ist vorübergehend nicht verfügbar. Bitte kontaktieren Sie uns direkt.",
+          code: "NOT_CONFIGURED",
+        },
+        { status: 503 }
+      );
+    }
+
     const data = result.data;
 
-    await handleFormSubmission({
-      persist: {
-        table: "bookings",
-        data: {
-          name: data.name,
-          email: data.email,
-          phone: data.phone || null,
-          date: data.date,
-          time: data.time,
-          service: data.service || null,
-          notes: data.notes || null,
-        },
-      },
-      emails: [
+    if (!isValidBookingDate(data.date)) {
+      return NextResponse.json(
+        { success: false, error: "Das gewählte Datum ist nicht buchbar." },
+        { status: 400 }
+      );
+    }
+
+    const bookedTimes = await getBookedTimesForDate(data.date);
+    if (!isSlotAvailable(data.date, data.time, bookedTimes)) {
+      return NextResponse.json(
         {
-          to: data.email,
-          subject: "Terminbestätigung – AVYZOR",
-          html: contactConfirmationEmail(data.name),
+          success: false,
+          error: "Der gewählte Termin ist nicht mehr verfügbar.",
+          code: "SLOT_UNAVAILABLE",
         },
-        {
-          to: EMAIL_TO,
-          subject: `Neue Terminbuchung: ${data.name}`,
-          html: adminNotificationEmail("Terminbuchung", {
-            Name: data.name,
-            Email: data.email,
-            Datum: data.date,
-            Uhrzeit: data.time,
-            Leistung: data.service || "–",
-            Anmerkungen: data.notes || "–",
-          }),
-          replyTo: data.email,
-        },
-      ],
+        { status: 409 }
+      );
+    }
+
+    const booking = await createWebsiteBooking({
+      name: data.name,
+      email: data.email,
+      phone: data.phone ?? null,
+      service: data.service ?? null,
+      notes: data.notes ?? null,
+      date: data.date,
+      time: data.time,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      appointmentId: booking.appointment.id,
+      emailSent: booking.emailSent,
+      message: booking.emailMessage,
+    });
   } catch (error) {
-    return handleApiError(error);
+    console.error("[booking] Buchung fehlgeschlagen:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Terminbuchung fehlgeschlagen.",
+      },
+      { status: 500 }
+    );
   }
 }

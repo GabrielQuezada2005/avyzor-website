@@ -92,7 +92,8 @@ export default {
     "time": {
       "label": "Time *",
       "placeholder": "Select time *",
-      "suffix": ""
+      "suffix": "",
+      "noSlots": "No appointments available. Please choose another date."
     },
     "service": {
       "label": "Consultation type",
@@ -125,5 +126,14 @@ export default {
     "genericError": "Something went wrong. Please try again.",
     "required": "Required field",
     "sending": "Sending…"
+  },
+  "validation": {
+    "nameMin": "Name must be at least 2 characters.",
+    "emailInvalid": "Invalid email address.",
+    "messageMin": "Message must be at least 10 characters.",
+    "serviceRequired": "Please select a service.",
+    "dateRequired": "Please select a date.",
+    "timeRequired": "Please select a time.",
+    "consentRequired": "Please accept the privacy policy."
   }
 };

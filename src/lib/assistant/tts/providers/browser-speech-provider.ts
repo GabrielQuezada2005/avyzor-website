@@ -12,7 +12,12 @@ import {
   loadTtsPreferences,
   type TtsPreferences,
 } from "../preferences";
+import {
+  applyQuestionProsody,
+  textIsOnlyQuestions,
+} from "../apply-question-prosody";
 import { sanitizeTextForSpeech } from "../sanitize-for-speech";
+import { logTtsDebugClient } from "../tts-debug-log";
 import { resolveVoice } from "../select-voice";
 import type {
   SpeakOptions,
@@ -77,9 +82,10 @@ export class BrowserSpeechProvider implements TtsProvider {
 
     this.stop();
 
-    const text = sanitizeTextForSpeech(options.text);
-    if (!text) return;
+    const sanitized = sanitizeTextForSpeech(options.text);
+    if (!sanitized) return;
 
+    const text = applyQuestionProsody(sanitized, "browser");
     const lang = options.lang ?? detectLanguageFromText(text);
     const voices = await loadVoices();
     const settings = resolveSettings(options.settings);
@@ -94,11 +100,25 @@ export class BrowserSpeechProvider implements TtsProvider {
     utterance.lang = lang;
     if (voice) utterance.voice = voice;
     utterance.rate = settings.rate ?? DEFAULT_TTS_PREFERENCES.rate;
-    utterance.pitch = settings.pitch ?? DEFAULT_TTS_PREFERENCES.pitch;
+    const basePitch = settings.pitch ?? DEFAULT_TTS_PREFERENCES.pitch;
+    // Browser Speech API ohne SSML: stärkere Pitch-Erhöhung nur bei reinen Fragen
+    utterance.pitch = textIsOnlyQuestions(text)
+      ? Math.min(2, basePitch + 0.1)
+      : basePitch;
     utterance.volume = settings.volume ?? DEFAULT_TTS_PREFERENCES.volume;
 
     this.utterance = utterance;
     this.setState("loading", options.messageId);
+
+    logTtsDebugClient({
+      ttsProvider: "browser",
+      voiceId: voice?.voiceURI ?? voice?.name ?? "system-default",
+      model: "SpeechSynthesis",
+      responseStatus: "N/A (no HTTP TTS request)",
+      audioSource: "Browser SpeechSynthesis",
+      requestUrl: "N/A",
+      phase: "client-browser-direct",
+    });
 
     utterance.onstart = () => {
       this.setState("playing", options.messageId);

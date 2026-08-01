@@ -1,12 +1,19 @@
 import { ASSISTANT_CONFIG } from "./config";
 import { AssistantApiError } from "./errors";
+import type { LeadProfileDisplay } from "./lead-detection";
 import type { ChatMessage } from "./types";
 
 interface AssistantApiResponse {
   success: boolean;
   message?: string;
+  lead?: LeadProfileDisplay | null;
   error?: string;
   code?: string;
+}
+
+export interface AssistantResponse {
+  message: string;
+  lead: LeadProfileDisplay | null;
 }
 
 function toApiMessages(
@@ -33,7 +40,7 @@ export async function generateAssistantResponse(
   history: ChatMessage[],
   sessionId?: string,
   locale?: string
-): Promise<string> {
+): Promise<AssistantResponse> {
   const messages = toApiMessages(history);
 
   if (messages.length === 0) {
@@ -67,7 +74,10 @@ export async function generateAssistantResponse(
     );
   }
 
-  return data.message;
+  return {
+    message: data.message,
+    lead: data.lead ?? null,
+  };
 }
 
 export function createMessageId(): string {

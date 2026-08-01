@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { ConsentCheckbox } from "@/components/forms/ConsentCheckbox";
 import { HoneypotField } from "@/components/forms/HoneypotField";
 import { SERVICE_IDS } from "@/lib/i18n/structures";
+import {
+  createQuoteFormSchema,
+  zodErrorsToFieldRecord,
+} from "@/lib/i18n/form-schemas.client";
 import { FileText, CheckCircle, AlertCircle } from "lucide-react";
 
 const BUDGET_KEYS = ["5000-10000", "10000-20000", "20000+"] as const;
@@ -17,12 +21,27 @@ const TIMELINE_KEYS = ["asap", "1-3-months", "3-6-months", "flexible"] as const;
 export function QuoteForm() {
   const t = useTranslations("forms.quote");
   const tCommon = useTranslations("forms.common");
+  const tValidation = useTranslations("forms.validation");
   const tServices = useTranslations("services.items");
 
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const schema = useMemo(
+    () =>
+      createQuoteFormSchema({
+        nameMin: tValidation("nameMin"),
+        emailInvalid: tValidation("emailInvalid"),
+        messageMin: tValidation("messageMin"),
+        serviceRequired: tValidation("serviceRequired"),
+        dateRequired: tValidation("dateRequired"),
+        timeRequired: tValidation("timeRequired"),
+        consentRequired: tValidation("consentRequired"),
+      }),
+    [tValidation]
+  );
 
   const serviceOptions = [
     { value: "", label: t("service.placeholder") },
@@ -60,6 +79,14 @@ export function QuoteForm() {
       ...Object.fromEntries(formData.entries()),
       consent: formData.get("consent") === "true",
     };
+
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      setErrors(zodErrorsToFieldRecord(parsed.error.issues));
+      setStatus("error");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/quote", {
