@@ -44,8 +44,11 @@ export function Header() {
       )}
     >
       <div className="container-premium mx-auto px-4 md:px-8">
-        <div className="flex items-center justify-between h-20">
-          <Link href="/" className="relative z-50 flex items-center gap-3 group">
+        <div className="grid h-20 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
+          <Link
+            href="/"
+            className="relative z-50 col-start-1 flex shrink-0 items-center gap-3 justify-self-start group"
+          >
             <Image
               src="/logos/avyzor-logo.png"
               alt="AVYZOR Logo"
@@ -59,7 +62,10 @@ export function Header() {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8" aria-label={t("mainNav")}>
+          <nav
+            className="col-start-2 hidden shrink-0 items-center gap-8 whitespace-nowrap lg:flex lg:-translate-x-[11.625rem] xl:-translate-x-14 2xl:-translate-x-12"
+            aria-label={t("mainNav")}
+          >
             {NAV_IDS.map((id) => (
               <Link
                 key={id}
@@ -72,8 +78,8 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-4">
-            <LanguageSwitcher compact />
+          <div className="col-start-3 hidden shrink-0 items-center justify-self-end gap-3 lg:flex">
+            <LanguageSwitcher />
             <Button
               variant="secondary"
               size="sm"
@@ -93,7 +99,7 @@ export function Header() {
 
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="lg:hidden relative z-50 p-2 text-white"
+            className="relative z-50 col-start-3 shrink-0 justify-self-end p-2 text-white lg:hidden"
             aria-label={isMobileOpen ? t("menuClose") : t("menuOpen")}
             aria-expanded={isMobileOpen}
             aria-controls="mobile-navigation"
@@ -143,7 +149,7 @@ export function Header() {
                   </motion.div>
                 ))}
                 <div className="pt-2">
-                  <LanguageSwitcher />
+                  <LanguageSwitcher fullWidth />
                 </div>
                 <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
                   <Button
