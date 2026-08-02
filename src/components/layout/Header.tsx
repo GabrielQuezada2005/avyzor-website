@@ -10,9 +10,14 @@ import { NAV_IDS, NAV_HREFS } from "@/lib/i18n/structures";
 import { SITE_CONFIG } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import type { LanguageOption } from "@/i18n/locale-config";
 import { cn, scrollToSection } from "@/lib/utils";
 
-export function Header() {
+interface HeaderProps {
+  languageOptions: readonly LanguageOption[];
+}
+
+export function Header({ languageOptions }: HeaderProps) {
   const tNav = useTranslations("nav");
   const t = useTranslations("header");
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,7 +45,7 @@ export function Header() {
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         isScrolled
           ? "bg-dark-900/80 backdrop-blur-xl border-b border-white/5 shadow-premium"
-          : "bg-transparent"
+          : "bg-dark-900/30 backdrop-blur-md border-b border-white/[0.03]"
       )}
     >
       <div className="container-premium mx-auto px-4 md:px-8">
@@ -78,8 +83,8 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="relative z-20 flex shrink-0 items-center justify-self-end gap-2 xl:gap-3 max-lg:hidden">
-            <LanguageSwitcher compact />
+          <div className="relative z-20 flex shrink-0 items-center justify-self-end gap-2 xl:gap-3 max-md:hidden">
+            <LanguageSwitcher options={languageOptions} compact />
             <Button
               variant="secondary"
               size="sm"
@@ -151,7 +156,11 @@ export function Header() {
                   </motion.div>
                 ))}
                 <div className="pt-2">
-                  <LanguageSwitcher fullWidth compact={false} />
+                  <LanguageSwitcher
+                    options={languageOptions}
+                    fullWidth
+                    compact={false}
+                  />
                 </div>
                 <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
                   <Button

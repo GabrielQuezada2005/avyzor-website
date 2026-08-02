@@ -171,6 +171,12 @@ export const LOCALE_DEFINITIONS = [
 ] as const;
 
 export type LocaleDefinition = (typeof LOCALE_DEFINITIONS)[number];
+
+/** Minimale Felder für Client-Komponenten (z. B. LanguageSwitcher via Server-Props). */
+export type LanguageOption = Pick<
+  LocaleDefinition,
+  "code" | "label" | "shortLabel"
+>;
 export type Locale = LocaleDefinition["code"];
 export type TextDirection = LocaleDefinition["dir"];
 

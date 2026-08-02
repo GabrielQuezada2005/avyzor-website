@@ -7,7 +7,10 @@ import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { AssistantWidgetLazy } from "@/components/assistant/AssistantWidgetLazy";
 import { SkipLink } from "@/components/layout/SkipLink";
-import { getLocaleDirection } from "@/i18n/locale-config";
+import {
+  getLocaleDirection,
+  LOCALE_DEFINITIONS,
+} from "@/i18n/locale-config";
 import { routing, type Locale } from "@/i18n/routing";
 import {
   buildSiteLayoutMetadata,
@@ -60,6 +63,9 @@ export default async function LocaleLayout({
 
   const structuredData = buildSiteStructuredDataJsonLd(locale, serviceTypes);
   const dir = getLocaleDirection(locale);
+  const languageOptions = LOCALE_DEFINITIONS.map(
+    ({ code, label, shortLabel }) => ({ code, label, shortLabel })
+  );
 
   return (
     <html lang={locale} dir={dir} className={fontVariables}>
@@ -76,7 +82,7 @@ export default async function LocaleLayout({
         />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SkipLink />
-          <Header />
+          <Header languageOptions={languageOptions} />
           <main id="main-content">{children}</main>
           <Footer />
           <AssistantWidgetLazy />

@@ -64,10 +64,10 @@ export async function generateOpenAIResponse(
   const knowledgeContext = await getAssistantKnowledgeContext(options?.locale);
 
   const systemPrompt = [
-    options?.locale ? buildLocaleInstruction(options.locale) : undefined,
     buildAssistantSystemPrompt(),
     knowledgeContext,
     options?.leadBehaviorPrompt,
+    options?.locale ? buildLocaleInstruction(options.locale) : undefined,
   ]
     .filter(Boolean)
     .join("\n\n");
