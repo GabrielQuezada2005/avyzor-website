@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -52,6 +52,8 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  setRequestLocale(locale);
+
   const messages = await getMessages();
   const t = await getTranslations({ locale, namespace: "metadata" });
   const serviceTypes = t.raw("jsonLd.serviceTypes") as string[];
@@ -61,18 +63,17 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir} className={fontVariables}>
-      <head>
+      <body
+        className="antialiased bg-dark-900 text-white font-sans min-h-screen"
+        style={{ backgroundColor: "#0a0a0a", color: "#ffffff" }}
+      >
+        {/* JSON-LD im Body – kein manuelles <head>, damit Next Metadata/Hydration nicht kollidieren */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
-      </head>
-      <body
-        className="antialiased bg-dark-900 text-white font-sans min-h-screen"
-        style={{ backgroundColor: "#0a0a0a", color: "#ffffff" }}
-      >
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SkipLink />
           <Header />

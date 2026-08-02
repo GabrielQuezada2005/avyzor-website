@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import "./globals.css";
 
 /**
  * Root 404 – erforderlich für next-intl Routing.
