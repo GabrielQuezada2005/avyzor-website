@@ -44,10 +44,10 @@ export function Header() {
       )}
     >
       <div className="container-premium mx-auto px-4 md:px-8">
-        <div className="grid h-20 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
+        <div className="grid h-20 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 lg:gap-4">
           <Link
             href="/"
-            className="relative z-50 col-start-1 flex shrink-0 items-center gap-3 justify-self-start group"
+            className="relative z-20 flex shrink-0 items-center gap-3 justify-self-start group"
           >
             <Image
               src="/logos/avyzor-logo.png"
@@ -63,7 +63,7 @@ export function Header() {
           </Link>
 
           <nav
-            className="col-start-2 hidden shrink-0 items-center gap-8 whitespace-nowrap lg:flex lg:-translate-x-[11.625rem] xl:-translate-x-14 2xl:-translate-x-12"
+            className="hidden min-w-0 items-center justify-center gap-3 whitespace-nowrap lg:flex xl:gap-5 2xl:gap-8"
             aria-label={t("mainNav")}
           >
             {NAV_IDS.map((id) => (
@@ -78,11 +78,12 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="col-start-3 hidden shrink-0 items-center justify-self-end gap-3 lg:flex">
-            <LanguageSwitcher />
+          <div className="relative z-20 flex shrink-0 items-center justify-self-end gap-2 xl:gap-3 max-lg:hidden">
+            <LanguageSwitcher compact />
             <Button
               variant="secondary"
               size="sm"
+              className="whitespace-nowrap"
               onClick={() =>
                 window.open(SITE_CONFIG.calendly, "_blank")
               }
@@ -91,6 +92,7 @@ export function Header() {
             </Button>
             <Button
               size="sm"
+              className="whitespace-nowrap"
               onClick={() => scrollToSection("kontakt")}
             >
               {t("startProject")}
@@ -99,7 +101,7 @@ export function Header() {
 
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="relative z-50 col-start-3 shrink-0 justify-self-end p-2 text-white lg:hidden"
+            className="relative z-20 shrink-0 justify-self-end p-2 text-white lg:hidden"
             aria-label={isMobileOpen ? t("menuClose") : t("menuOpen")}
             aria-expanded={isMobileOpen}
             aria-controls="mobile-navigation"
@@ -149,7 +151,7 @@ export function Header() {
                   </motion.div>
                 ))}
                 <div className="pt-2">
-                  <LanguageSwitcher fullWidth />
+                  <LanguageSwitcher fullWidth compact={false} />
                 </div>
                 <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
                   <Button
