@@ -9,12 +9,10 @@ import { AssistantWidgetLazy } from "@/components/assistant/AssistantWidgetLazy"
 import { SkipLink } from "@/components/layout/SkipLink";
 import { routing, type Locale } from "@/i18n/routing";
 import {
-  buildProfessionalServiceJsonLd,
   buildSiteLayoutMetadata,
-  buildWebSiteJsonLd,
+  buildSiteStructuredDataJsonLd,
 } from "@/lib/seo";
 import { fontVariables } from "@/lib/fonts";
-import "../globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -57,10 +55,7 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "metadata" });
   const serviceTypes = t.raw("jsonLd.serviceTypes") as string[];
 
-  const structuredData = [
-    buildWebSiteJsonLd(locale),
-    buildProfessionalServiceJsonLd(locale, serviceTypes),
-  ];
+  const structuredData = buildSiteStructuredDataJsonLd(locale, serviceTypes);
 
   return (
     <html lang={locale} className={fontVariables}>

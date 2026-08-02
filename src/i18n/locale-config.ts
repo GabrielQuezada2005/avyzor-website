@@ -53,6 +53,42 @@ export const LOCALE_DEFINITIONS = [
     intl: "it-IT",
     language: "Italian",
   },
+  {
+    code: "ru",
+    label: "Русский",
+    shortLabel: "RU",
+    bcp47: "ru-RU",
+    og: "ru_RU",
+    intl: "ru-RU",
+    language: "Russian",
+  },
+  {
+    code: "tr",
+    label: "Türkçe",
+    shortLabel: "TR",
+    bcp47: "tr-TR",
+    og: "tr_TR",
+    intl: "tr-TR",
+    language: "Turkish",
+  },
+  {
+    code: "pt",
+    label: "Português",
+    shortLabel: "PT",
+    bcp47: "pt-PT",
+    og: "pt_PT",
+    intl: "pt-PT",
+    language: "Portuguese",
+  },
+  {
+    code: "nl",
+    label: "Nederlands",
+    shortLabel: "NL",
+    bcp47: "nl-NL",
+    og: "nl_NL",
+    intl: "nl-NL",
+    language: "Dutch",
+  },
 ] as const;
 
 export type LocaleDefinition = (typeof LOCALE_DEFINITIONS)[number];

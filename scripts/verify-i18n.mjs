@@ -13,8 +13,20 @@ const messagesDir = path.join(root, "src/messages");
 
 const REFERENCE_LOCALE = "de";
 
-/** Aktive Locales – synchron zu src/i18n/locale-config.ts */
-const ACTIVE_LOCALES = ["de", "en", "es", "fr", "it"];
+/** Liest aktive Locales aus locale-config.ts (einzige Quelle der Wahrheit). */
+function loadActiveLocales() {
+  const configPath = path.join(root, "src/i18n/locale-config.ts");
+  const source = fs.readFileSync(configPath, "utf8");
+  const locales = [...source.matchAll(/^\s*code:\s*"([a-z]{2})"/gm)].map(
+    (match) => match[1]
+  );
+  if (locales.length === 0) {
+    throw new Error("Keine Locales in src/i18n/locale-config.ts gefunden");
+  }
+  return locales;
+}
+
+const ACTIVE_LOCALES = loadActiveLocales();
 
 /** Namespaces – synchron zu src/lib/i18n/namespaces.ts */
 const MESSAGE_NAMESPACES = [

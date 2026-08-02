@@ -13,7 +13,19 @@ const root = path.join(__dirname, "..");
 const envPath = path.join(root, ".env.local");
 const BASE = process.argv[2] ?? "http://localhost:3000";
 
-const LOCALES = ["de", "en", "es", "fr", "it"];
+function loadActiveLocales() {
+  const configPath = path.join(root, "src/i18n/locale-config.ts");
+  const source = fs.readFileSync(configPath, "utf8");
+  const locales = [...source.matchAll(/^\s*code:\s*"([a-z]{2})"/gm)].map(
+    (match) => match[1]
+  );
+  if (locales.length === 0) {
+    throw new Error("Keine Locales in src/i18n/locale-config.ts gefunden");
+  }
+  return locales;
+}
+
+const LOCALES = loadActiveLocales();
 const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz"];
 const ADMIN_PATHS = ["/admin", "/portal/login", "/portal/register"];
 const API_GET = [

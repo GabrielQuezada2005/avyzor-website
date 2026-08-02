@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { logClientError } from "@/lib/logging/client";
-import "./globals.css";
 
 interface ErrorProps {
   error: Error & { digest?: string };

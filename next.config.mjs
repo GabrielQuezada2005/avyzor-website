@@ -1,5 +1,38 @@
 import createNextIntlPlugin from "next-intl/plugin";
 
+const isDev = process.env.NODE_ENV !== "production";
+
+function buildContentSecurityPolicy() {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const connectSrc = [
+    "'self'",
+    "https://api.openai.com",
+    "https://api.elevenlabs.io",
+    "https://*.supabase.co",
+    "wss://*.supabase.co",
+  ];
+
+  // Next.js Dev/HMR und Framer-Motion-Hydration benötigen eval in Development.
+  if (isDev) {
+    scriptSrc.push("'unsafe-eval'");
+    connectSrc.push("ws://localhost:*", "wss://localhost:*");
+  }
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc.join(" ")}`,
+    "frame-src 'self' https://calendly.com https://js.stripe.com https://hooks.stripe.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+  ].join("; ");
+}
+
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   {
@@ -33,19 +66,7 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://api.openai.com https://api.elevenlabs.io https://*.supabase.co wss://*.supabase.co",
-      "frame-src 'self' https://calendly.com https://js.stripe.com https://hooks.stripe.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'self'",
-    ].join("; "),
+    value: buildContentSecurityPolicy(),
   },
 ];
 

@@ -42,7 +42,7 @@ for (const file of requiredFiles) {
 console.log("→ Prüfe Locale-Layout (Viewport, JSON-LD, Lazy Assistant)…");
 const localeLayout = read("src/app/[locale]/layout.tsx");
 assert(localeLayout.includes("export const viewport"), "viewport export fehlt");
-assert(localeLayout.includes("buildWebSiteJsonLd"), "WebSite JSON-LD fehlt");
+assert(localeLayout.includes("buildSiteStructuredDataJsonLd"), "JSON-LD @graph fehlt");
 assert(localeLayout.includes("AssistantWidgetLazy"), "Lazy Assistant fehlt");
 assert(localeLayout.includes('from "@/lib/fonts"'), "Shared fonts fehlt");
 

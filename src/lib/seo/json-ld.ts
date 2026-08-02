@@ -34,6 +34,38 @@ export function buildProfessionalServiceJsonLd(
   return jsonLd;
 }
 
+function stripJsonLdContext(
+  node: Record<string, unknown>
+): Record<string, unknown> {
+  if (!node || typeof node !== "object") {
+    return {};
+  }
+
+  const { ["@context"]: _context, ...rest } = node;
+  return rest;
+}
+
+/**
+ * Kombiniert mehrere JSON-LD-Entitäten in einem @graph-Root.
+ * Safari/WebKit wirft sonst: r["@context"].toLowerCase() auf Top-Level-Arrays.
+ */
+export function buildSiteStructuredDataJsonLd(
+  locale: Locale,
+  serviceTypes: string[]
+): Record<string, unknown> {
+  const graphNodes = [
+    buildWebSiteJsonLd(locale),
+    buildProfessionalServiceJsonLd(locale, serviceTypes),
+  ]
+    .filter((node) => node && typeof node === "object")
+    .map(stripJsonLdContext);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graphNodes,
+  };
+}
+
 export function buildWebSiteJsonLd(locale: Locale): Record<string, unknown> {
   return {
     "@context": "https://schema.org",

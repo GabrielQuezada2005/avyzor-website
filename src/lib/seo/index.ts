@@ -12,5 +12,6 @@ export {
 
 export {
   buildProfessionalServiceJsonLd,
+  buildSiteStructuredDataJsonLd,
   buildWebSiteJsonLd,
 } from "./json-ld";
