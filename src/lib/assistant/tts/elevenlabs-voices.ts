@@ -15,6 +15,10 @@ export const ELEVENLABS_TTS_VOICES = [
 
 export type ElevenLabsVoiceId = (typeof ELEVENLABS_TTS_VOICES)[number]["id"];
 
+/** Premium-Standard (Daniel) – synchron zu ELEVENLABS_VOICE_ID / getElevenLabsVoiceId(). */
+export const DEFAULT_ELEVENLABS_VOICE_ID: ElevenLabsVoiceId =
+  "onwK4e9ZLuTAKqWW03F9";
+
 export const ELEVENLABS_VOICE_PREFIX = "elevenlabs:";
 
 /** Premium-Standard pro Sprache (BCP-47 Präfix). */
@@ -47,11 +51,11 @@ export function fromElevenLabsVoiceUri(
 
 export function resolveElevenLabsVoice(
   voiceUri: string | null,
-  lang: string
+  _lang: string,
+  configuredDefault: ElevenLabsVoiceId = DEFAULT_ELEVENLABS_VOICE_ID
 ): ElevenLabsVoiceId {
   const fromPref = voiceUri ? fromElevenLabsVoiceUri(voiceUri) : null;
   if (fromPref) return fromPref;
 
-  const prefix = lang.split("-")[0].toLowerCase();
-  return DEFAULT_ELEVENLABS_VOICE_BY_LANG[prefix] ?? "EXAVITQu4vr4xnSDxMaL";
+  return configuredDefault;
 }

@@ -17,7 +17,10 @@ import {
   headersToRecord,
   logTtsDebugClient,
 } from "../tts-debug-log";
-import { fromElevenLabsVoiceUri } from "../elevenlabs-voices";
+import {
+  resolveElevenLabsVoice,
+  type ElevenLabsVoiceId,
+} from "../elevenlabs-voices";
 import type {
   SpeakOptions,
   SpeechPlaybackState,
@@ -124,9 +127,11 @@ export class CloudSpeechProvider implements TtsProvider {
     lang: string
   ): string {
     if (provider === "elevenlabs") {
-      const fromUri = fromElevenLabsVoiceUri(voiceUri ?? null);
-      if (fromUri) return fromUri;
-      return this.status?.defaultVoice ?? "onwK4e9ZLuTAKqWW03F9";
+      return resolveElevenLabsVoice(
+        voiceUri ?? null,
+        lang,
+        (this.status?.defaultVoice as ElevenLabsVoiceId | null) ?? undefined
+      );
     }
     return voiceUri?.replace(/^openai:/, "") ?? this.status?.defaultVoice ?? "unknown";
   }
@@ -140,14 +145,17 @@ export class CloudSpeechProvider implements TtsProvider {
       response.headers.get("X-TTS-Provider") ?? payload.provider;
     const providerForVoice =
       usedProvider === "openai" ? "openai" : "elevenlabs";
+    const voiceFromHeader = response.headers.get("X-TTS-Voice-Id");
 
     logTtsDebugClient({
       ttsProvider: usedProvider,
-      voiceId: this.resolveVoiceIdForLog(
-        providerForVoice,
-        payload.voiceUri,
-        payload.lang
-      ),
+      voiceId:
+        voiceFromHeader ??
+        this.resolveVoiceIdForLog(
+          providerForVoice,
+          payload.voiceUri,
+          payload.lang
+        ),
       model: this.status?.model ?? "unknown",
       responseStatus: response.status,
       audioSource,

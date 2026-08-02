@@ -5,6 +5,8 @@
  * Wartet auf canplay, damit der erste MP3-Frame dekodiert ist.
  */
 
+import { ensureAudioPlaybackUnlocked } from "./unlock-audio-playback";
+
 export interface StreamAudioHandle {
   audio: HTMLAudioElement;
   objectUrl: string;
@@ -90,7 +92,13 @@ async function playWithStreamedBlob(
   await waitForPlaybackReady(audio);
   audio.currentTime = 0;
   audio.onplay = onPlaying;
-  await audio.play();
+
+  try {
+    await audio.play();
+  } catch (error) {
+    ensureAudioPlaybackUnlocked();
+    await audio.play();
+  }
 
   return { audio, objectUrl };
 }

@@ -9,9 +9,12 @@ import {
   generateOpenAiSpeechStream,
 } from "./generate-openai-speech.server";
 import { resolveOpenAiVoice } from "./openai-voices";
-import { resolveElevenLabsVoice } from "./elevenlabs-voices";
+import { resolveElevenLabsVoice, type ElevenLabsVoiceId } from "./elevenlabs-voices";
 import { TtsServiceError } from "./tts-service-error";
-import type { TtsCloudProvider } from "@/lib/env.server";
+import {
+  getElevenLabsVoiceId,
+  type TtsCloudProvider,
+} from "@/lib/env.server";
 
 export interface TtsGenerationRequest {
   provider: TtsCloudProvider;
@@ -30,7 +33,11 @@ export async function generateTtsAudio(
   const resolvedLang = lang ?? "de-DE";
 
   if (provider === "elevenlabs") {
-    const voice = resolveElevenLabsVoice(voiceUri ?? null, resolvedLang);
+    const voice = resolveElevenLabsVoice(
+      voiceUri ?? null,
+      resolvedLang,
+      getElevenLabsVoiceId() as ElevenLabsVoiceId
+    );
     const options = { text, lang: resolvedLang, voice, speed };
 
     return stream

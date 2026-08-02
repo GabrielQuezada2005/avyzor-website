@@ -21,6 +21,7 @@ export {
   resetTtsPreferences,
 } from "./preferences";
 export { getTtsEngine, TtsEngine } from "./tts-engine";
+export { ensureAudioPlaybackUnlocked } from "./unlock-audio-playback";
 export { getBrowserSpeechProvider } from "./providers/browser-speech-provider";
 export {
   getCloudSpeechProvider,

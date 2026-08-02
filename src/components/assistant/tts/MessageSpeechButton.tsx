@@ -11,6 +11,7 @@ import { Volume2, Pause, Square, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useSpeech } from "./SpeechContext";
+import { ensureAudioPlaybackUnlocked } from "@/lib/assistant/tts/unlock-audio-playback";
 
 interface MessageSpeechButtonProps {
   messageId: string;
@@ -32,6 +33,7 @@ export function MessageSpeechButton({
   const isEngaged = isPlaying || isPaused || isLoading;
 
   const handlePlayPause = () => {
+    ensureAudioPlaybackUnlocked();
     if (!isActive) {
       playMessage(messageId, text);
       return;

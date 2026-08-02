@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { localeToBcp47, type Locale } from "@/i18n/routing";
-import { detectLanguageFromText } from "@/lib/assistant/tts";
+import { detectLanguageFromText, ensureAudioPlaybackUnlocked } from "@/lib/assistant/tts";
 import {
   DEFAULT_LANGUAGE,
   getSttEngine,
@@ -142,6 +142,7 @@ export function VoiceProvider({
   const startRecording = useCallback(() => {
     if (!isVoiceSupported || isTyping) return;
 
+    ensureAudioPlaybackUnlocked();
     getSttEngine().start({
       lang: language || DEFAULT_LANGUAGE,
       onInterim: (text) => setInterimTranscript(text),

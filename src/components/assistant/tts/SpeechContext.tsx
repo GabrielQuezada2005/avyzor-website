@@ -20,6 +20,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { localeToBcp47, type Locale } from "@/i18n/routing";
 import {
   getTtsEngine,
+  ensureAudioPlaybackUnlocked,
   loadTtsPreferences,
   loadVoicesForLanguage,
   probeCloudTtsAvailability,
@@ -182,6 +183,7 @@ export function SpeechProvider({ children }: SpeechProviderProps) {
 
   const playMessage = useCallback(
     (messageId: string, text: string, speakLang?: string) => {
+      ensureAudioPlaybackUnlocked();
       void getTtsEngine().speak({
         messageId,
         text,

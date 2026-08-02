@@ -11,6 +11,7 @@ import {
   DEFAULT_ELEVENLABS_VOICE_BY_LANG,
   ELEVENLABS_TTS_VOICES,
   resolveElevenLabsVoice,
+  type ElevenLabsVoiceId,
 } from "@/lib/assistant/tts/elevenlabs-voices";
 import {
   DEFAULT_OPENAI_VOICE_BY_LANG,
@@ -161,7 +162,11 @@ export async function POST(request: NextRequest) {
     if (audio instanceof ReadableStream) {
       const voiceId =
         usedProvider === "elevenlabs"
-          ? resolveElevenLabsVoice(resolvedVoiceUri ?? null, lang ?? "de-DE")
+          ? resolveElevenLabsVoice(
+              resolvedVoiceUri ?? null,
+              lang ?? "de-DE",
+              getElevenLabsVoiceId() as ElevenLabsVoiceId
+            )
           : resolveOpenAiVoice(resolvedVoiceUri ?? null, lang ?? "de-DE");
       const model =
         usedProvider === "elevenlabs"
@@ -191,6 +196,7 @@ export async function POST(request: NextRequest) {
           "Cache-Control": "no-cache",
           "Transfer-Encoding": "chunked",
           "X-TTS-Provider": usedProvider,
+          "X-TTS-Voice-Id": voiceId,
         },
       });
     }
@@ -199,7 +205,11 @@ export async function POST(request: NextRequest) {
       ttsProvider: usedProvider,
       voiceId:
         usedProvider === "elevenlabs"
-          ? resolveElevenLabsVoice(resolvedVoiceUri ?? null, lang ?? "de-DE")
+          ? resolveElevenLabsVoice(
+              resolvedVoiceUri ?? null,
+              lang ?? "de-DE",
+              getElevenLabsVoiceId() as ElevenLabsVoiceId
+            )
           : resolveOpenAiVoice(resolvedVoiceUri ?? null, lang ?? "de-DE"),
       model:
         usedProvider === "elevenlabs"
@@ -222,6 +232,14 @@ export async function POST(request: NextRequest) {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "private, max-age=3600",
         "X-TTS-Provider": usedProvider,
+        "X-TTS-Voice-Id":
+          usedProvider === "elevenlabs"
+            ? resolveElevenLabsVoice(
+                resolvedVoiceUri ?? null,
+                lang ?? "de-DE",
+                getElevenLabsVoiceId() as ElevenLabsVoiceId
+              )
+            : resolveOpenAiVoice(resolvedVoiceUri ?? null, lang ?? "de-DE"),
       },
     });
   } catch (error) {
