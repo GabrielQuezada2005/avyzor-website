@@ -16,6 +16,7 @@ export const LOCALE_DEFINITIONS = [
     og: "de_DE",
     intl: "de-DE",
     language: "German",
+    dir: "ltr",
   },
   {
     code: "en",
@@ -25,6 +26,7 @@ export const LOCALE_DEFINITIONS = [
     og: "en_US",
     intl: "en-US",
     language: "English",
+    dir: "ltr",
   },
   {
     code: "es",
@@ -34,6 +36,7 @@ export const LOCALE_DEFINITIONS = [
     og: "es_ES",
     intl: "es-ES",
     language: "Spanish",
+    dir: "ltr",
   },
   {
     code: "fr",
@@ -43,6 +46,7 @@ export const LOCALE_DEFINITIONS = [
     og: "fr_FR",
     intl: "fr-FR",
     language: "French",
+    dir: "ltr",
   },
   {
     code: "it",
@@ -52,24 +56,7 @@ export const LOCALE_DEFINITIONS = [
     og: "it_IT",
     intl: "it-IT",
     language: "Italian",
-  },
-  {
-    code: "ru",
-    label: "Русский",
-    shortLabel: "RU",
-    bcp47: "ru-RU",
-    og: "ru_RU",
-    intl: "ru-RU",
-    language: "Russian",
-  },
-  {
-    code: "tr",
-    label: "Türkçe",
-    shortLabel: "TR",
-    bcp47: "tr-TR",
-    og: "tr_TR",
-    intl: "tr-TR",
-    language: "Turkish",
+    dir: "ltr",
   },
   {
     code: "pt",
@@ -79,6 +66,7 @@ export const LOCALE_DEFINITIONS = [
     og: "pt_PT",
     intl: "pt-PT",
     language: "Portuguese",
+    dir: "ltr",
   },
   {
     code: "nl",
@@ -88,11 +76,103 @@ export const LOCALE_DEFINITIONS = [
     og: "nl_NL",
     intl: "nl-NL",
     language: "Dutch",
+    dir: "ltr",
+  },
+  {
+    code: "pl",
+    label: "Polski",
+    shortLabel: "PL",
+    bcp47: "pl-PL",
+    og: "pl_PL",
+    intl: "pl-PL",
+    language: "Polish",
+    dir: "ltr",
+  },
+  {
+    code: "tr",
+    label: "Türkçe",
+    shortLabel: "TR",
+    bcp47: "tr-TR",
+    og: "tr_TR",
+    intl: "tr-TR",
+    language: "Turkish",
+    dir: "ltr",
+  },
+  {
+    code: "ru",
+    label: "Русский",
+    shortLabel: "RU",
+    bcp47: "ru-RU",
+    og: "ru_RU",
+    intl: "ru-RU",
+    language: "Russian",
+    dir: "ltr",
+  },
+  {
+    code: "uk",
+    label: "Українська",
+    shortLabel: "UA",
+    bcp47: "uk-UA",
+    og: "uk_UA",
+    intl: "uk-UA",
+    language: "Ukrainian",
+    dir: "ltr",
+  },
+  {
+    code: "ar",
+    label: "العربية",
+    shortLabel: "AR",
+    bcp47: "ar-SA",
+    og: "ar_SA",
+    intl: "ar-SA",
+    language: "Arabic",
+    dir: "rtl",
+  },
+  {
+    code: "zh",
+    label: "中文",
+    shortLabel: "ZH",
+    bcp47: "zh-CN",
+    og: "zh_CN",
+    intl: "zh-CN",
+    language: "Chinese",
+    dir: "ltr",
+  },
+  {
+    code: "ja",
+    label: "日本語",
+    shortLabel: "JA",
+    bcp47: "ja-JP",
+    og: "ja_JP",
+    intl: "ja-JP",
+    language: "Japanese",
+    dir: "ltr",
+  },
+  {
+    code: "ko",
+    label: "한국어",
+    shortLabel: "KO",
+    bcp47: "ko-KR",
+    og: "ko_KR",
+    intl: "ko-KR",
+    language: "Korean",
+    dir: "ltr",
+  },
+  {
+    code: "hi",
+    label: "हिन्दी",
+    shortLabel: "HI",
+    bcp47: "hi-IN",
+    og: "hi_IN",
+    intl: "hi-IN",
+    language: "Hindi",
+    dir: "ltr",
   },
 ] as const;
 
 export type LocaleDefinition = (typeof LOCALE_DEFINITIONS)[number];
 export type Locale = LocaleDefinition["code"];
+export type TextDirection = LocaleDefinition["dir"];
 
 export const defaultLocale: Locale = "de";
 
@@ -110,6 +190,10 @@ export function getLocaleDefinition(
 
 export function getLocaleLanguageName(code: string): string {
   return getLocaleDefinition(code)?.language ?? "German";
+}
+
+export function getLocaleDirection(code: string): TextDirection {
+  return getLocaleDefinition(code)?.dir ?? "ltr";
 }
 
 export function isSupportedLocale(code: string): code is Locale {
