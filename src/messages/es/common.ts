@@ -11,6 +11,17 @@ export default {
     "tooltip": "Chat de WhatsApp",
     "defaultMessage": "Hola AVYZOR, me interesan sus servicios premium."
   },
+  "contactMenu": {
+    "openAriaLabel": "Abrir menú de contacto",
+    "closeAriaLabel": "Cerrar menú de contacto",
+    "menuAriaLabel": "Opciones de contacto",
+    "call": "Llamar",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "Correo",
+    "book": "Reservar una consulta"
+  },
   "loading": "Cargando…",
   "errorCode": "500",
   "errorTitle": "Se ha producido un error",

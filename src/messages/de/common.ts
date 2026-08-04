@@ -12,6 +12,17 @@ export default {
     defaultMessage:
       "Hallo AVYZOR, ich interessiere mich für Ihre Premium-Leistungen.",
   },
+  contactMenu: {
+    openAriaLabel: "Kontaktmenü öffnen",
+    closeAriaLabel: "Kontaktmenü schließen",
+    menuAriaLabel: "Kontaktmöglichkeiten",
+    call: "Anrufen",
+    whatsapp: "WhatsApp",
+    instagram: "Instagram",
+    tiktok: "TikTok",
+    email: "E-Mail",
+    book: "Beratung buchen"
+  },
   loading: "Wird geladen…",
   errorCode: "500",
   errorTitle: "Ein Fehler ist aufgetreten",

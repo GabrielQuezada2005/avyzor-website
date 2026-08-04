@@ -215,8 +215,8 @@ Transparente Preise, keine versteckten Kosten.
 KONTAKT:
 E-Mail: ${SITE_CONFIG.email}
 Kontaktformular: Bereich „Kontakt" auf der Website
-Terminbuchung: ${SITE_CONFIG.calendly}
-WhatsApp: Button unten rechts auf der Website
+${SITE_CONFIG.calendly ? `Terminbuchung: ${SITE_CONFIG.calendly}` : "Terminbuchung: über das Kontaktformular oder die Buchungsseite"}
+Kontaktmenü: Floating-Button unten rechts (Anruf, WhatsApp, Social, E-Mail, Beratung)
 Reaktionszeit: meist am selben Werktag, spätestens innerhalb von 24 Stunden
 Erstgespräch: kostenlos, ca. 30 Minuten, unverbindlich
 

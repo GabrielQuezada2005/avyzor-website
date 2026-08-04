@@ -11,6 +11,17 @@ export default {
     "tooltip": "WhatsApp चैट",
     "defaultMessage": "नमस्ते AVYZOR, मुझे आपकी प्रीमियम सेवाओं में रुचि है।"
   },
+  "contactMenu": {
+    "openAriaLabel": "संपर्क मेनू खोलें",
+    "closeAriaLabel": "संपर्क मेनू बंद करें",
+    "menuAriaLabel": "संपर्क विकल्प",
+    "call": "कॉल करें",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "ईमेल",
+    "book": "परामर्श बुक करें"
+  },
   "loading": "लोड हो रहा है…",
   "errorCode": "500",
   "errorTitle": "कुछ गलत हो गया",

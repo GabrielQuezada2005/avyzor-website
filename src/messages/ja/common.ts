@@ -11,6 +11,17 @@ export default {
     "tooltip": "WhatsAppチャット",
     "defaultMessage": "AVYZOR様、プレミアムサービスにご興味があります。"
   },
+  "contactMenu": {
+    "openAriaLabel": "お問い合わせメニューを開く",
+    "closeAriaLabel": "お問い合わせメニューを閉じる",
+    "menuAriaLabel": "お問い合わせオプション",
+    "call": "電話",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "メール",
+    "book": "相談を予約"
+  },
   "loading": "読み込み中…",
   "errorCode": "500",
   "errorTitle": "問題が発生しました",

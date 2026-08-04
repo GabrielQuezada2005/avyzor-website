@@ -11,6 +11,17 @@ export default {
     "tooltip": "دردشة واتساب",
     "defaultMessage": "مرحباً AVYZOR، أنا مهتم بخدماتكم المميزة."
   },
+  "contactMenu": {
+    "openAriaLabel": "فتح قائمة الاتصال",
+    "closeAriaLabel": "إغلاق قائمة الاتصال",
+    "menuAriaLabel": "خيارات الاتصال",
+    "call": "اتصال",
+    "whatsapp": "واتساب",
+    "instagram": "إنستغرام",
+    "tiktok": "تيك توك",
+    "email": "البريد الإلكتروني",
+    "book": "حجز استشارة"
+  },
   "loading": "جارٍ التحميل…",
   "errorCode": "500",
   "errorTitle": "حدث خطأ ما",

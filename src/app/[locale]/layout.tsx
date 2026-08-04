@@ -4,7 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { ContactMenuMount } from "@/components/layout/ContactMenuMount";
 import { AssistantWidgetLazy } from "@/components/assistant/AssistantWidgetLazy";
 import { SkipLink } from "@/components/layout/SkipLink";
 import {
@@ -14,9 +14,11 @@ import {
 import { routing, type Locale } from "@/i18n/routing";
 import {
   buildSiteLayoutMetadata,
-  buildSiteStructuredDataJsonLd,
 } from "@/lib/seo";
 import { fontVariables } from "@/lib/fonts";
+
+/** CSP-Nonces sind request-gebunden – kein SSG für Locale-Layout. */
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -24,10 +26,6 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   colorScheme: "dark",
 };
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
 
 export async function generateMetadata({
   params: { locale },
@@ -58,14 +56,11 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const t = await getTranslations({ locale, namespace: "metadata" });
-  const serviceTypes = t.raw("jsonLd.serviceTypes") as string[];
-
-  const structuredData = buildSiteStructuredDataJsonLd(locale, serviceTypes);
   const dir = getLocaleDirection(locale);
   const languageOptions = LOCALE_DEFINITIONS.map(
     ({ code, label, shortLabel }) => ({ code, label, shortLabel })
   );
+  const copyrightYear = new Date().getFullYear();
 
   return (
     <html lang={locale} dir={dir} className={fontVariables}>
@@ -73,20 +68,19 @@ export default async function LocaleLayout({
         className="antialiased bg-dark-900 text-white font-sans min-h-screen"
         style={{ backgroundColor: "#0a0a0a", color: "#ffffff" }}
       >
-        {/* JSON-LD im Body – kein manuelles <head>, damit Next Metadata/Hydration nicht kollidieren */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
-          }}
-        />
+        {/*
+          Do not render <script type="application/ld+json"> in this tree.
+          Browsers relocate script nodes; React hydration then throws
+          NotFoundError (removeChild) and wipes the page to scripts-only.
+          JSON-LD is exposed via /{locale}/schema.json (see metadata alternates).
+        */}
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SkipLink />
           <Header languageOptions={languageOptions} />
           <main id="main-content">{children}</main>
-          <Footer />
+          <Footer copyrightYear={copyrightYear} />
           <AssistantWidgetLazy />
-          <WhatsAppButton />
+          <ContactMenuMount />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -11,6 +11,17 @@ export default {
     "tooltip": "Чат WhatsApp",
     "defaultMessage": "Здравствуйте, AVYZOR! Меня интересуют ваши премиальные услуги."
   },
+  "contactMenu": {
+    "openAriaLabel": "Открыть меню контактов",
+    "closeAriaLabel": "Закрыть меню контактов",
+    "menuAriaLabel": "Варианты связи",
+    "call": "Позвонить",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "Email",
+    "book": "Записаться на консультацию"
+  },
   "loading": "Загрузка…",
   "errorCode": "500",
   "errorTitle": "Произошла ошибка",

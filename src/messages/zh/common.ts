@@ -11,6 +11,17 @@ export default {
     "tooltip": "WhatsApp 聊天",
     "defaultMessage": "您好 AVYZOR，我对贵公司的尊享服务很感兴趣。"
   },
+  "contactMenu": {
+    "openAriaLabel": "打开联系菜单",
+    "closeAriaLabel": "关闭联系菜单",
+    "menuAriaLabel": "联系方式",
+    "call": "电话",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "邮箱",
+    "book": "预约咨询"
+  },
   "loading": "加载中…",
   "errorCode": "500",
   "errorTitle": "出了点问题",

@@ -9,8 +9,8 @@ export const SITE_CONFIG = {
   email: publicEnv.site.email,
   phone: publicEnv.site.phone,
   phoneHref: publicEnv.site.phoneHref,
-  whatsapp: publicEnv.site.whatsapp || "491234567890",
-  calendly: publicEnv.calendly || "https://calendly.com/avyzor",
+  whatsapp: publicEnv.site.whatsapp,
+  calendly: publicEnv.calendly,
   address: {
     street: publicEnv.site.addressStreet,
     city: publicEnv.site.addressCity,
@@ -28,6 +28,7 @@ export const SITE_CONFIG = {
     linkedin: publicEnv.site.linkedin,
     instagram: publicEnv.site.instagram,
     twitter: publicEnv.site.twitter,
+    tiktok: publicEnv.site.tiktok,
   },
 } as const;
 

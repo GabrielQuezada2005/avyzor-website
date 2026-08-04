@@ -16,6 +16,7 @@ export const publicEnv = {
     linkedin: process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN ?? "",
     instagram: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM ?? "",
     twitter: process.env.NEXT_PUBLIC_SOCIAL_TWITTER ?? "",
+    tiktok: process.env.NEXT_PUBLIC_SOCIAL_TIKTOK ?? "",
     addressStreet: process.env.NEXT_PUBLIC_ADDRESS_STREET ?? "",
     addressCity: process.env.NEXT_PUBLIC_ADDRESS_CITY ?? "",
     addressZip: process.env.NEXT_PUBLIC_ADDRESS_ZIP ?? "",

@@ -11,6 +11,17 @@ export default {
     "tooltip": "WhatsApp 채팅",
     "defaultMessage": "안녕하세요 AVYZOR, 프리미엄 서비스에 관심이 있습니다."
   },
+  "contactMenu": {
+    "openAriaLabel": "연락 메뉴 열기",
+    "closeAriaLabel": "연락 메뉴 닫기",
+    "menuAriaLabel": "연락 옵션",
+    "call": "전화",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "이메일",
+    "book": "상담 예약"
+  },
   "loading": "로딩 중…",
   "errorCode": "500",
   "errorTitle": "문제가 발생했습니다",

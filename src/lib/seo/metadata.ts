@@ -128,7 +128,13 @@ export function buildSiteLayoutMetadata(
       icon: "/favicon.png",
       apple: "/apple-touch-icon.png",
     },
-    alternates: pageMeta.alternates,
+    alternates: {
+      ...pageMeta.alternates,
+      // Linked JSON-LD — avoids <script> in the React body (hydration wipe).
+      types: {
+        "application/ld+json": `${SITE_CONFIG.url}/${locale}/schema.json`,
+      },
+    },
     openGraph: pageMeta.openGraph,
     twitter: pageMeta.twitter,
     robots: pageMeta.robots,
