@@ -79,7 +79,8 @@ export function Button({
       whileTap={isDisabled || reduceMotion ? undefined : { scale: 0.98 }}
       transition={springTransition}
       className={cn(
-        "relative inline-flex items-center justify-center gap-2 font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group",
+        "relative inline-flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group",
+        "transition-[brightness,border-color,background-color,color,box-shadow] duration-500 ease-out-expo",
         variants[variant],
         sizes[size],
         variant === "primary" && "btn-shine",

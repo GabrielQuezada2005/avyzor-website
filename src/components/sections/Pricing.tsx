@@ -13,12 +13,108 @@ import {
 import { PRICING_AMOUNTS } from "@/lib/i18n/pricing-data";
 import { formatPrice } from "@/lib/i18n/format";
 import { scrollToSection } from "@/lib/utils";
+import { easeOutExpo } from "@/lib/motion";
+import { useInViewMotion } from "@/lib/use-scroll-reveal";
+
+function PricingPlanCard({
+  planId,
+  index,
+  highlighted,
+  features,
+  loadingPlan,
+  onCheckout,
+  locale,
+}: {
+  planId: (typeof PRICING_PLAN_IDS)[number];
+  index: number;
+  highlighted: boolean;
+  features: string[];
+  loadingPlan: string | null;
+  onCheckout: (planId: string) => void;
+  locale: string;
+}) {
+  const t = useTranslations("pricing");
+  const reveal = useInViewMotion(
+    { opacity: 0, y: 40 },
+    {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, delay: index * 0.1, ease: easeOutExpo },
+    }
+  );
+
+  return (
+    <motion.div
+      {...reveal}
+      className={`relative ${
+        highlighted
+          ? "glass-gold rounded-2xl p-6 sm:p-8 shadow-gold scale-[1.02] lg:scale-105 transition-[transform,box-shadow,border-color] duration-500 ease-out-expo"
+          : "premium-card"
+      }`}
+    >
+      {highlighted && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1 bg-gold-gradient rounded-full text-dark-900 text-xs font-bold">
+          <Star size={12} fill="currentColor" aria-hidden="true" />
+          {t("popularBadge")}
+        </div>
+      )}
+
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold text-white mb-2">
+          {t(`plans.${planId}.name`)}
+        </h3>
+        <p className="text-white/50 text-sm mb-4">
+          {t(`plans.${planId}.description`)}
+        </p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold text-gradient-gold">
+            {formatPrice(PRICING_AMOUNTS[planId], locale)}
+          </span>
+          <span className="text-white/40 text-sm">{t("onceLabel")}</span>
+        </div>
+      </div>
+
+      <ul className="space-y-3 mb-8">
+        {features.map((feature) => (
+          <li
+            key={feature}
+            className="flex items-start gap-3 text-sm text-white/70"
+          >
+            <Check
+              size={16}
+              className="text-gold-400 mt-0.5 shrink-0"
+              aria-hidden="true"
+            />
+            {feature}
+          </li>
+        ))}
+      </ul>
+
+      <Button
+        variant={highlighted ? "primary" : "secondary"}
+        className="w-full"
+        isLoading={loadingPlan === planId}
+        onClick={() => onCheckout(planId)}
+      >
+        {t(`plans.${planId}.cta`)}
+      </Button>
+    </motion.div>
+  );
+}
 
 export function Pricing() {
   const t = useTranslations("pricing");
   const locale = useLocale();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
+  const neukundeReveal = useInViewMotion(
+    { opacity: 0, y: 30 },
+    { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOutExpo } }
+  );
+  const footerReveal = useInViewMotion(
+    { opacity: 0 },
+    { opacity: 1, transition: { duration: 0.5 } }
+  );
 
   const neukundeFeatures = t.raw("neukunde.features") as string[];
 
@@ -69,10 +165,7 @@ export function Pricing() {
         )}
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          {...neukundeReveal}
           className="relative max-w-4xl mx-auto mb-10 rounded-2xl p-[1px] bg-gradient-to-r from-gold-500/40 via-gold-300/60 to-gold-500/40"
         >
           <div className="relative rounded-2xl bg-dark-900/90 backdrop-blur-xl p-6 md:p-8">
@@ -132,73 +225,22 @@ export function Pricing() {
             const features = t.raw(`plans.${planId}.features`) as string[];
 
             return (
-              <motion.div
+              <PricingPlanCard
                 key={planId}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative rounded-2xl p-8 transition-all duration-300 ${
-                  highlighted
-                    ? "glass-gold shadow-gold scale-[1.02] lg:scale-105"
-                    : "glass hover:border-gold-500/20"
-                }`}
-              >
-                {highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1 bg-gold-gradient rounded-full text-dark-900 text-xs font-bold">
-                    <Star size={12} fill="currentColor" aria-hidden="true" />
-                    {t("popularBadge")}
-                  </div>
-                )}
-
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {t(`plans.${planId}.name`)}
-                  </h3>
-                  <p className="text-white/50 text-sm mb-4">
-                    {t(`plans.${planId}.description`)}
-                  </p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-gradient-gold">
-                      {formatPrice(PRICING_AMOUNTS[planId], locale)}
-                    </span>
-                    <span className="text-white/40 text-sm">{t("onceLabel")}</span>
-                  </div>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-3 text-sm text-white/70"
-                    >
-                      <Check
-                        size={16}
-                        className="text-gold-400 mt-0.5 shrink-0"
-                        aria-hidden="true"
-                      />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  variant={highlighted ? "primary" : "secondary"}
-                  className="w-full"
-                  isLoading={loadingPlan === planId}
-                  onClick={() => handleCheckout(planId)}
-                >
-                  {t(`plans.${planId}.cta`)}
-                </Button>
-              </motion.div>
+                planId={planId}
+                index={index}
+                highlighted={highlighted}
+                features={features}
+                loadingPlan={loadingPlan}
+                onCheckout={handleCheckout}
+                locale={locale}
+              />
             );
           })}
         </div>
 
         <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          {...footerReveal}
           className="text-center text-white/40 text-sm mt-12"
         >
           {t("footerNote")}
